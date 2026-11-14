@@ -11,3 +11,5 @@ body,button,input,select,textarea,.worksheet-page{font-family:Pretendard,'Apple 
 .ai-handoff .ai-open{display:flex;text-decoration:none;justify-content:center;text-align:center;font-size:13px}.ai-import{margin-top:14px}.ai-handoff .ai-status{margin-top:8px}
 .prompt-fallback{margin:4px 0 16px}.prompt-fallback summary{cursor:pointer;color:#536b59;font-size:11px}.prompt-fallback[open] .prompt-preview{margin-top:9px}
 .ai-handoff .history-note{font-size:11px;color:#79867b;margin:10px 0 0}
+.ai-handoff .prompt-copy-button{display:block;width:100%;min-height:44px;margin:0 0 9px;text-align:center;font-size:13px}
+.policy-page{max-width:850px;padding:55px 6% 80px;margin:auto}.policy-page h1{font-size:34px;letter-spacing:-.05em}.policy-page h2{font-size:20px;margin:35px 0 10px}.policy-page p{font-size:14px;line-height:1.9;color:var(--muted);word-break:keep-all}.policy-page a,footer a{color:var(--green);text-underline-offset:3px}

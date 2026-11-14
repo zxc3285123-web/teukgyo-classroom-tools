@@ -101,7 +101,7 @@
     if(!copied&&navigator.clipboard?.writeText)navigator.clipboard.writeText(value).catch(()=>{});
     return copied;
   }
-  $('#open-sheet-chatgpt').addEventListener('click',()=>{
+  function prepareSheetPrompt(){
     const gradeCode=$('#grade').value,subjectCode=$('#subject').value,topicCode=$('input[name="topic"]:checked').value;
     const grade=C.gradeName(gradeCode),subject=C.subjectNames[subjectCode],topic=C.topicInfo[topicCode][0];
     const level=levelNames[$('input[name="level"]:checked').value],count=Number($('#count').value);
@@ -109,8 +109,16 @@
     const avoid=prior.length?`\n다음은 이 선생님이 이전에 사용한 문항입니다. 같은 질문이나 표현만 바꾼 유사 문항은 만들지 마세요:\n${prior.map((q,i)=>`${i+1}. ${q}`).join('\n')}`:'';
     const prompt=`특수교육 기본 교육과정을 참고하여 ${grade} ${subject} 학습지를 만들어 주세요. 주제는 “${topic}”, 학생의 현재 수행 수준은 “${level}”, 문항 수는 ${count}개입니다. 2022 개정 특수교육 기본 교육과정의 해당 학년군에 맞는 생활 밀착형 활동으로 구성하되, 특정 성취기준의 원문을 확인하지 못했다면 그대로 인용하거나 근거를 지어내지 마세요. 이번 학습지 안에서도 같은 문제를 반복하지 말고, 답이 명확한 문제로 작성해 주세요. 학생 개인정보는 사용하지 마세요.${avoid}\n아래 형식의 유효한 JSON 객체만 출력하고 설명, 마크다운, 코드 블록은 넣지 마세요. 질문과 정답은 모두 한국어로 적어 주세요.\n{"title":"학습지 제목","questions":[{"question":"문제 1","answer":"정답 1"}]}`;
     $('#sheet-prompt-preview').value=prompt;$('#sheet-import-area').classList.remove('hidden');
+    return prompt;
+  }
+  $('#copy-sheet-prompt').addEventListener('click',async()=>{
+    const copied=await copyText(prepareSheetPrompt());
+    $('#ai-sheet-status').textContent=copied?'요청 문구를 복사했어요. 이제 ② 내 ChatGPT 열기를 누르고 붙여 넣어 주세요.':'자동 복사가 허용되지 않았어요. 아래 요청 문구 직접 보기를 펼쳐 복사해 주세요.';
+  });
+  $('#open-sheet-chatgpt').addEventListener('click',()=>{
+    const prompt=prepareSheetPrompt();
     const copied=copyPrompt(prompt);
-    $('#ai-sheet-status').textContent=copied?'ChatGPT가 열립니다. 붙여 넣기가 안 되면 요청 문구 직접 복사를 펼쳐 주세요.':'자동 복사가 허용되지 않았어요. 요청 문구 직접 복사를 펼쳐 주세요.';
+    $('#ai-sheet-status').textContent=copied?'ChatGPT 입력창에 붙여 넣고 전송하세요. 답변 전체를 복사해 아래에 가져오세요.':'ChatGPT 입력창에 붙여 넣기가 안 되면 아래 요청 문구 직접 보기를 펼쳐 복사해 주세요.';
   });
   $('#import-sheet-result').addEventListener('click',()=>{
     const raw=$('#ai-sheet-result').value.trim();

@@ -17,3 +17,9 @@
 교육과정 내용은 수업 전 [2022 개정 특수교육 기본 교육과정 원문](https://www.nise.go.kr/onmam/openapi/fileDown.do?fileSn=oZXmqchDx6q4fe5TJYtELA)과 학생별 목표에 맞게 검토해 주세요.
 
 글꼴: Pretendard (라이선스는 `Pretendard-LICENSE.txt`).
+
+## 광고 설정
+
+현재 AdSense 게시자 계정의 자동 광고 코드를 `index.html`의 `<head>`에 연결했습니다. 광고 표시 위치와 형식은 [AdSense 광고 화면](https://adsense.google.com/adsense/)에서 `zxc3285123-web.github.io` 사이트의 **수정**을 눌러 관리합니다. 이 페이지 자체에는 선생님이 바꿀 수 있는 광고 설정을 두지 않았습니다. 광고 수익은 이 게시자 계정에 귀속됩니다.
+
+AdSense에서 사이트 상태가 **준비됨**이어도 새 페이지에 광고가 즉시 보이지 않을 수 있습니다. 광고 게재 여부는 AdSense 계정의 자동 광고 설정과 심사 상태를 확인해 주세요. 인쇄하는 학습지에는 광고를 넣지 않았습니다.
