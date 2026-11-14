@@ -1,7 +1,7 @@
 /* Original practice items informed by the 2022 special education basic curriculum.
    Official source: https://www.nise.go.kr/onmam/openapi/fileDown.do?fileSn=oZXmqchDx6q4fe5TJYtELA */
 window.basicCurriculum2022=(()=>{
-  const subjectNames={korean:'국어',math:'수학',social:'사회',science:'과학',barun:'바른 생활',seul:'슬기로운 생활',jeul:'즐거운 생활',career:'진로와 직업'};
+  const subjectNames={korean:'국어',math:'수학'};
   const topicInfo={
     sounds:['소리와 의미','♫','생활 속 소리 구별'],expression:['표정과 요구','☺','표정 · 몸짓 · 의사 표현'],matching:['같은 것 찾기','◈','같고 다른 것 · 짝짓기'],count5:['다섯까지 세기','⑤','1~5의 수량'],moneyuse:['화폐의 쓰임','₩','화폐 찾기 · 쓰임'],daynight:['낮과 밤','☀','하루의 변화'],routine:['생활 습관','✓','일상 순서'],manners:['함께 지키는 약속','♡','인사 · 배려'],observe:['주변 살펴보기','◎','학교와 집의 모습'],season:['계절과 생활','✿','날씨에 맞는 생활'],play:['즐거운 놀이','☆','함께 놀이하기'],rhythm:['몸과 리듬','♪','움직임 · 리듬'],
     familiarwords:['친숙한 낱말','가','물건 · 장소 · 동작'],requests:['요청 듣고 행동하기','☏','짧은 지시 이해'],self:['나를 알아보기','◯','좋아하는 것 · 특징'],family:['가족과 친구','♧','관계 · 예절'],count9:['열까지 세기','⑨','0~9와 수 비교'],add9:['한 자리 수 연산','＋','합이 9 이하'],coins:['동전 활용','₩','동전 · 가격'],texture:['물체의 느낌','▧','질감 분류'],plants:['동식물 관찰','♣','특징 살펴보기'],
@@ -16,6 +16,19 @@ window.basicCurriculum2022=(()=>{
     middle:{korean:['reading','memo'],social:['democracy','culture'],math:['hundreds','multiplication','cardmoney','calendar'],science:['electric','heat'],career:['selfknow','jobs']},
     high:{korean:['notices','punctuation'],social:['participation','publicplace'],math:['thousands','division','budget','schedule'],science:['electricsafety','insulation'],career:['planning','workplace']}
   };
+  // The curriculum specifies grade-band content elements, not one mandatory
+  // nationwide textbook table of contents. Use those elements as units here.
+  const curriculumUnits={
+    sounds:['여러 가지 소리','♫','듣기·말하기 · 소리 구별'],expression:['표정과 몸짓','☺','듣기·말하기 · 감정과 요구 표현'],matching:['수의 기초: 짝짓기','◈','수와 연산 · 관계있는 사물 짝짓기'],count5:['다섯까지 개수 세기','⑤','수와 연산 · 1~5의 수량'],moneyuse:['화폐 탐색','₩','수와 연산 · 화폐의 쓰임'],daynight:['시간 경험하기','☀','측정 · 낮과 밤 및 하루의 순서'],
+    familiarwords:['일상생활과 관련된 단어','가','듣기·말하기 · 친숙한 낱말'],requests:['말 듣고 행동하기','☏','듣기·말하기 · 짧은 지시 이해'],count9:['열까지 개수 세기','⑨','수와 연산 · 0~9와 수 비교'],add9:['한 자리 수의 덧셈과 뺄셈','＋','수와 연산 · 합이 9 이하'],coins:['동전 활용','₩','수와 연산 · 동전과 가격'],
+    wordread:['단어의 의미','文','읽기 · 생활 속 낱말'],askanswer:['질문과 대답하기','?','듣기·말하기 · 정보 주고받기'],tens:['두 자리 수','10','수와 연산 · 십 묶음과 낱개'],add10:['10이 되는 더하기와 몇십의 연산','⊕','수와 연산 · 10 만들기'],bills:['지폐 활용','₩','수와 연산 · 천·오천·만 원'],clock:['시각과 날짜','◷','측정 · 몇 시와 몇 시 30분'],
+    reading:['문장의 내용 확인하기','▤','읽기 · 생활 글의 정보'],memo:['메모하기','✎','쓰기 · 필요한 정보 기록'],hundreds:['세 자리 수','100','수와 연산 · 백 묶음과 자릿값'],multiplication:['곱셈의 기초','×','수와 연산 · 같은 수 묶기'],cardmoney:['여러 가지 화폐 활용','₩','수와 연산 · 지폐와 카드'],calendar:['시간과 달력','▦','측정 · 월과 날짜'],
+    notices:['글과 매체에서 정보 찾기','▤','읽기 · 생활 안내 읽기'],punctuation:['문장 부호 사용하기','✎','쓰기 · 짧은 글 쓰기'],thousands:['네 자리 수','1000','수와 연산 · 천 묶음과 자릿값'],division:['나눗셈의 기초','÷','수와 연산 · 똑같이 나누기'],budget:['화폐 활용과 관리','₩','수와 연산 · 저축과 소비'],schedule:['시간 계획하기','▦','측정 · 하루와 주간 계획']
+  };
+  Object.assign(topicInfo,curriculumUnits);
+  for(const bandKey of Object.keys(catalog)){
+    catalog[bandKey]={korean:catalog[bandKey].korean,math:catalog[bandKey].math};
+  }
   const bank={
     sounds:[['“멍멍” 소리를 내는 동물은?',['강아지','고양이','참새'],'강아지'],['“야옹” 소리를 내는 동물은?',['고양이','강아지','닭'],'고양이'],['학교에서 수업 시작을 알리는 소리는?',['종소리','파도 소리','빗소리'],'종소리'],['“똑똑” 소리는 어떤 행동과 관계있나요?',['문 두드리기','물 마시기','책 읽기'],'문 두드리기']],
     expression:[['친구에게 인사할 때 알맞은 말은?',['안녕!','싫어!','아파!'],'안녕!'],['도움이 필요할 때 알맞은 말은?',['도와주세요.','잘 가요.','괜찮아요.'],'도와주세요.'],['기쁜 마음을 나타내는 표정은?',['웃는 표정','찡그린 표정','우는 표정'],'웃는 표정'],['싫다는 뜻을 전할 때 알맞은 말은?',['싫어요.','고마워요.','안녕하세요.'],'싫어요.']],
@@ -59,37 +72,51 @@ window.basicCurriculum2022=(()=>{
     planning:[['나의 강점과 연결해 살펴볼 수 있는 것은?',['관심 있는 일','친구의 성적','교실 색'],'관심 있는 일'],['졸업 후 계획을 세울 때 먼저 할 일은?',['원하는 활동 생각하기','모든 기회 피하기','남의 계획 그대로 쓰기'],'원하는 활동 생각하기'],['목표를 실천할 때 도움이 되는 것은?',['작은 단계로 나누기','계획 잊기','처음부터 포기하기'],'작은 단계로 나누기'],['직업 체험 후 기록하면 좋은 것은?',['해 본 일과 느낌','친구 옷 색','날씨만'],'해 본 일과 느낌']],
     workplace:[['일터에 도착했을 때 먼저 확인할 것은?',['오늘 할 일','다른 사람의 가방','벽 색'],'오늘 할 일'],['모르는 일을 맡았을 때 알맞은 행동은?',['설명을 요청하기','추측만 하고 시작하기','도구 숨기기'],'설명을 요청하기'],['작업 도구를 사용한 뒤 알맞은 행동은?',['제자리에 정리하기','바닥에 두기','던지기'],'제자리에 정리하기'],['일터에서 약속 시간을 지키는 까닭은?',['함께 일하기 위해','옷을 바꾸기 위해','신발을 고르기 위해'],'함께 일하기 위해']]
   };
+  for(const extra of [window.extraWorksheetBank,window.moreWorksheetBank]){
+    for(const [topic,items] of Object.entries(extra||{}))bank[topic]=[...(bank[topic]||[]),...items];
+  }
   const choose=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
   const pick=xs=>xs[choose(0,xs.length-1)];
-  const shuffle=xs=>[...xs].sort(()=>Math.random()-.5);
+  const shuffle=xs=>{const a=[...xs];for(let i=a.length-1;i>0;i--){const j=choose(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
   const dots=(n,alt=false)=>Array.from({length:n},()=>`<span class="count-dot${alt?' second':''}"></span>`).join('');
   const visualOptions=(choices,level)=>{let shown=level==='basic'?choices.slice(0,2):choices;return `<div class="word-choices">보기: ${shuffle(shown).join('　·　')}</div>`};
-  const bankProblem=(topic,level,entry,cycle)=>{let [question,choices,answer]=entry;return {question:(cycle?'다시 생각해 보세요. ':'')+question,visual:visualOptions(choices,level),answer}};
+  const bankProblem=(topic,level,entry,key)=>{let [question,choices,answer]=entry;return {question,visual:visualOptions(choices,level),answer,key}};
   function numericProblem(topic,level){
-    if(topic==='count5'||topic==='count9'){let n=choose(1,topic==='count5'?5:9);return {question:'그림의 점은 모두 몇 개인가요?',visual:dots(n),answer:`${n}개`};}
+    if(topic==='count5'||topic==='count9'){let n=choose(1,topic==='count5'?5:9),thing=pick(['점','동그라미','구슬','사과','별','블록','단추','공']);return {question:`그림의 ${thing}은 모두 몇 개인가요?`,visual:dots(n),answer:`${n}개`};}
     if(topic==='add9'){let a=choose(1,8),b=choose(1,9-a),minus=Math.random()<.4;return minus?{question:`${a+b} − ${b} = ?`,visual:level==='basic'?dots(a+b):'',answer:String(a)}:{question:`${a} + ${b} = ?`,visual:level==='basic'?dots(a)+`<span class="visual-plus">+</span>`+dots(b,true):'',answer:String(a+b)}}
     if(topic==='tens'||topic==='hundreds'||topic==='thousands'){let unit={tens:10,hundreds:100,thousands:1000}[topic],a=choose(1,level==='challenge'?8:4),b=choose(0,topic==='tens'?9:level==='basic'?3:8),c=topic==='tens'?0:choose(0,level==='basic'?3:8),d=topic==='thousands'?choose(0,level==='basic'?3:8):0;let n=a*unit+(topic==='tens'?b:topic==='hundreds'?b*10+c:b*100+c*10+d);return {question:`${unit}개 묶음 ${a}개와 ${topic==='tens'?`낱개 ${b}개`:topic==='hundreds'?`10개 묶음 ${b}개, 낱개 ${c}개`:`100개 묶음 ${b}개, 10개 묶음 ${c}개, 낱개 ${d}개`}는 모두 몇 개인가요?`,visual:level==='basic'?`<div class="word-choices">${unit}개 묶음 × ${a}</div>`:'',answer:String(n)}}
-    if(topic==='add10'){let a=choose(1,9);if(level==='basic')return {question:`${a} + ? = 10`,visual:dots(a),answer:String(10-a)};let x=choose(1,4)*10,y=choose(1,4)*10,minus=Math.random()<.5;return {question:`${minus?x+y:x} ${minus?'−':'+'} ${y} = ?`,visual:'',answer:String(minus?x:x+y)}}
+    if(topic==='add10'){let a=choose(1,9);if(level==='basic'){let thing=pick(['사과','구슬','블록','연필','단추','별']);return {question:`${thing} ${a}개에 몇 개를 더하면 10개가 되나요?`,visual:dots(a),answer:`${10-a}개`}}let x=choose(1,4)*10,y=choose(1,4)*10,minus=Math.random()<.5;return {question:`${minus?x+y:x} ${minus?'−':'+'} ${y} = ?`,visual:'',answer:String(minus?x:x+y)}}
     if(topic==='multiplication'){let a=choose(2,level==='basic'?5:9),b=choose(2,level==='basic'?5:9);return {question:`${a}개씩 ${b}묶음입니다. 모두 몇 개인가요?`,visual:level==='basic'?Array.from({length:b},()=>`<span class="word-choices">${dots(a)}</span>`).join(''):'',answer:`${a*b}개`}}
-    if(topic==='division'){let groups=choose(2,level==='basic'?4:6),each=choose(2,level==='basic'?4:8),total=groups*each;return {question:`물건 ${total}개를 ${groups}명에게 똑같이 나누면 한 명이 몇 개씩 받나요?`,visual:level==='basic'?dots(total):'',answer:`${each}개`}}
-    if(topic==='coins'){let five=choose(0,1),hundreds=choose(1,4),total=five*500+hundreds*100;return {question:'그림의 동전은 모두 얼마인가요?',visual:`<div class="word-choices">${five?'500원 + ':''}${Array.from({length:hundreds},()=> '100원').join(' + ')}</div>`,answer:`${total}원`}}
+    if(topic==='division'){let groups=choose(2,level==='basic'?4:6),each=choose(2,level==='basic'?4:8),total=groups*each,thing=pick(['사과','구슬','연필','과자','블록','카드']);return {question:`${thing} ${total}개를 ${groups}명에게 똑같이 나누면 한 명이 몇 개씩 받나요?`,visual:level==='basic'?dots(total):'',answer:`${each}개`}}
+    if(topic==='coins'){let five=choose(0,2),hundreds=choose(0,4),fifties=choose(0,2),tens=choose(0,3),total=five*500+hundreds*100+fifties*50+tens*10;if(!total)return numericProblem(topic,level);let parts=[...Array(five).fill('500원'),...Array(hundreds).fill('100원'),...Array(fifties).fill('50원'),...Array(tens).fill('10원')];return {question:'그림의 동전은 모두 얼마인가요?',visual:`<div class="word-choices">${parts.join(' + ')}</div>`,answer:`${total}원`}}
     if(topic==='bills'){let ten=choose(0,1),five=choose(0,1),thousands=choose(1,4),total=ten*10000+five*5000+thousands*1000;return {question:'그림의 지폐는 모두 얼마인가요?',visual:`<div class="word-choices">${ten?'10,000원 + ':''}${five?'5,000원 + ':''}${Array.from({length:thousands},()=> '1,000원').join(' + ')}</div>`,answer:`${total.toLocaleString('ko-KR')}원`}}
-    if(topic==='clock'){let h=choose(1,12),half=level==='basic'?false:Math.random()<.5;return {question:'시계를 보고 시간을 써 보세요.',visual:`<div class="simple-clock">${h} : ${half?'30':'00'}</div>`,answer:`${h}시${half?' 30분':''}`}}
-    if(topic==='budget'){let money=pick([10000,15000,20000]),price=pick([3000,4000,5000,7000]);return {question:`가진 돈 ${money.toLocaleString('ko-KR')}원에서 ${price.toLocaleString('ko-KR')}원짜리 물건을 사면 얼마가 남나요?`,visual:level==='basic'?`<div class="word-choices">가진 돈 − 물건 값</div>`:'',answer:`${(money-price).toLocaleString('ko-KR')}원`}}
-    if(topic==='schedule'){let day=pick(['월요일','수요일','금요일']),hour=pick([9,10,14,15]);return {question:`일정표에 “${day} ${hour}시, 도서관”이라고 적혀 있습니다. 언제 도서관에 가나요?`,visual:level==='basic'?`<div class="word-choices">${day} · ${hour}시 · 도서관</div>`:'',answer:`${day} ${hour}시`}}
+    if(topic==='clock'){let h=choose(1,12),half=level==='basic'?false:Math.random()<.5,activity=pick(['수업 시작','점심','도서관 방문','버스 출발','운동','약속']);return {question:`${activity} 시각을 보고 시간을 써 보세요.`,visual:`<div class="simple-clock">${h} : ${half?'30':'00'}</div>`,answer:`${h}시${half?' 30분':''}`}}
+    if(topic==='budget'){let money=pick([10000,15000,20000,25000,30000,50000]),price=pick([2000,3000,4000,5000,7000,8000,9000]),thing=pick(['공책','물병','간식','연필 세트','수건','책']);return {question:`가진 돈 ${money.toLocaleString('ko-KR')}원에서 ${price.toLocaleString('ko-KR')}원짜리 ${thing}을 사면 얼마가 남나요?`,visual:level==='basic'?`<div class="word-choices">가진 돈 − 물건 값</div>`:'',answer:`${(money-price).toLocaleString('ko-KR')}원`}}
+    if(topic==='schedule'){let day=pick(['월요일','화요일','수요일','목요일','금요일','토요일']),hour=pick([9,10,11,13,14,15,16]),place=pick(['도서관','체육관','미술실','상담실','운동장','주민센터']);return {question:`일정표에 “${day} ${hour}시, ${place}”이라고 적혀 있습니다. 언제 ${place}에 가나요?`,visual:level==='basic'?`<div class="word-choices">${day} · ${hour}시 · ${place}</div>`:'',answer:`${day} ${hour}시`}}
     return null;
   }
   const band=grade=>grade[0]==='e'?(Number(grade[1])<=2?'e12':Number(grade[1])<=4?'e34':'e56'):grade[0]==='m'?'middle':'high';
   const gradeName=grade=>({e:'초등학교',m:'중학교',h:'고등학교'})[grade[0]]+' '+grade[1]+'학년';
   const bandName=grade=>({e12:'초등 1~2학년군',e34:'초등 3~4학년군',e56:'초등 5~6학년군',middle:'중학교 1~3학년군',high:'고등학교 1~3학년군'})[band(grade)];
-  const createProblems=(topic,level,grade,count)=>{
+  const createProblems=(topic,level,grade,count,avoidKeys=[])=>{
     let source=bank[topic];
-    if(source){let order=shuffle(source);return Array.from({length:count},(_,i)=>bankProblem(topic,level,order[i%order.length],Math.floor(i/order.length)))}
-    const result=[],seen=new Set();
+    if(source){
+      const recent=new Map(avoidKeys.map((key,i)=>[key,i]));
+      const order=shuffle(source.map((entry,i)=>({entry,key:`${topic}:${i}`}))).sort((a,b)=>(recent.get(a.key)??-1)-(recent.get(b.key)??-1));
+      return Array.from({length:count},(_,i)=>bankProblem(topic,level,order[i%order.length].entry,order[i%order.length].key));
+    }
+    const result=[],seen=new Set(),recent=new Set(avoidKeys),candidates=[];
+    for(let i=0;i<Math.max(160,count*20);i++){
+      const problem=numericProblem(topic,level);if(!problem)break;
+      problem.key=`${topic}:${problem.question}|${problem.visual}`;
+      if(!candidates.some(p=>p.key===problem.key))candidates.push(problem);
+    }
+    const order=shuffle(candidates).sort((a,b)=>Number(recent.has(a.key))-Number(recent.has(b.key)));
     for(let i=0;i<count;i++){
-      let problem,tries=0,key;
-      do{problem=numericProblem(topic,level);key=problem.question+'|'+problem.visual;tries++}while(seen.has(key)&&tries<40);
-      seen.add(key);result.push(problem);
+      let problem=order.find(p=>!seen.has(p.key))||numericProblem(topic,level);
+      if(!problem)break;
+      problem.key??=`${topic}:${problem.question}|${problem.visual}`;
+      seen.add(problem.key);result.push(problem);
     }
     return result;
   };

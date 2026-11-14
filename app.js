@@ -2,37 +2,21 @@
   const $ = s => document.querySelector(s);
   const C = window.basicCurriculum2022;
   const escapeHTML = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const levelNames={basic:'기초',practice:'연습',challenge:'도전'};
   let current={},problems=[];
-  const historyKey='teukgyo-question-history-v1';
+  const historyKey='teukgyo-offline-question-history-v1';
   let questionHistory={};
   try{questionHistory=JSON.parse(localStorage.getItem(historyKey)||'{}')||{}}catch{questionHistory={}}
   const historyScope=(grade,subject,topic)=>[C.band(grade),subject,topic].join(':');
-  const normalizeQuestion=value=>String(value).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
-  function similarQuestion(left,right){
-    const a=normalizeQuestion(left),b=normalizeQuestion(right);
-    if(a===b)return true;
-    if(a.length<13||b.length<13||Math.abs(a.length-b.length)>Math.max(a.length,b.length)*.35)return false;
-    const grams=s=>new Set(Array.from({length:s.length-1},(_,i)=>s.slice(i,i+2)));
-    const x=grams(a),y=grams(b),common=[...x].filter(g=>y.has(g)).length;
-    return common/(x.size+y.size-common)>=.82;
-  }
-  const previousQuestions=(grade,subject,topic)=>{
+  const previousKeys=(grade,subject,topic)=>{
     const saved=questionHistory[historyScope(grade,subject,topic)];
-    return Array.isArray(saved)?saved.filter(q=>typeof q==='string'):[];
+    return Array.isArray(saved)?saved.filter(key=>typeof key==='string'):[];
   };
-  function repeatedIndices(items,grade,subject,topic){
-    const prior=previousQuestions(grade,subject,topic),accepted=[],repeated=[];
-    items.forEach((item,i)=>{
-      if([...prior,...accepted].some(old=>similarQuestion(item.question,old)))repeated.push(i+1);
-      else accepted.push(item.question);
-    });
-    return repeated;
-  }
-  function rememberQuestions(items,grade,subject,topic){
+  function rememberQuestions(){
+    if(!current.topic||!problems.length)return;
+    const {grade,subject,topic}=current;
     const scope=historyScope(grade,subject,topic);
-    questionHistory[scope]=[...previousQuestions(grade,subject,topic),...items.map(p=>p.question)].slice(-200);
-    try{localStorage.setItem(historyKey,JSON.stringify(questionHistory));return true}catch{return false}
+    questionHistory[scope]=[...previousKeys(grade,subject,topic),...problems.map(p=>p.key)].slice(-300);
+    try{localStorage.setItem(historyKey,JSON.stringify(questionHistory))}catch{}
   }
 
   document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>{
@@ -60,11 +44,13 @@
     $('#print-root').innerHTML=html+($('#answer-key').checked?chunks.map((items,i)=>sheetPage(items,i,chunks.length,true)).join(''):'');
     $('#preview-status').textContent=`${problems.length}문항 · ${chunks.length}쪽 준비됨`;
   }
-  function generate(){
+  function generate(newSheet=false){
     const topic=$('input[name="topic"]:checked');if(!topic)return;
+    const previous=problems.map(p=>p.key).filter(Boolean);
     current={grade:$('#grade').value,subject:$('#subject').value,topic:topic.value,level:$('input[name="level"]:checked').value,count:Number($('#count').value),title:$('#paper-title').value.trim()};
-    problems=C.createProblems(current.topic,current.level,current.grade,current.count);
+    problems=C.createProblems(current.topic,current.level,current.grade,current.count,[...previousKeys(current.grade,current.subject,current.topic),...previous]);
     renderSheet();
+    if(newSheet)rememberQuestions();
   }
   function updateTopics(){
     const grade=$('#grade').value,subject=$('#subject').value,topics=C.catalog[C.band(grade)][subject],old=$('input[name="topic"]:checked')?.value;
@@ -79,13 +65,13 @@
   }
   $('#grade').addEventListener('change',updateSubjects);
   $('#subject').addEventListener('change',updateTopics);
-  $('#topic-options').addEventListener('change',generate);
-  document.querySelectorAll('input[name="level"]').forEach(el=>el.addEventListener('change',generate));
-  $('#count').addEventListener('change',generate);
+  $('#topic-options').addEventListener('change',()=>generate());
+  document.querySelectorAll('input[name="level"]').forEach(el=>el.addEventListener('change',()=>generate()));
+  $('#count').addEventListener('change',()=>generate());
   $('#paper-title').addEventListener('input',()=>{if(current.topic){current.title=$('#paper-title').value.trim();renderSheet()}});
-  $('#worksheet-form').addEventListener('submit',e=>{e.preventDefault();generate()});
+  $('#worksheet-form').addEventListener('submit',e=>{e.preventDefault();generate(true)});
   $('#answer-key').addEventListener('change',renderSheet);
-  $('#print-button').addEventListener('click',()=>window.print());
+  $('#print-button').addEventListener('click',()=>{rememberQuestions();window.print()});
   updateSubjects();
 
   async function copyText(value){
@@ -101,41 +87,6 @@
     if(!copied&&navigator.clipboard?.writeText)navigator.clipboard.writeText(value).catch(()=>{});
     return copied;
   }
-  function prepareSheetPrompt(){
-    const gradeCode=$('#grade').value,subjectCode=$('#subject').value,topicCode=$('input[name="topic"]:checked').value;
-    const grade=C.gradeName(gradeCode),subject=C.subjectNames[subjectCode],topic=C.topicInfo[topicCode][0];
-    const level=levelNames[$('input[name="level"]:checked').value],count=Number($('#count').value);
-    const prior=previousQuestions(gradeCode,subjectCode,topicCode).slice(-30);
-    const avoid=prior.length?`\n다음은 이 선생님이 이전에 사용한 문항입니다. 같은 질문이나 표현만 바꾼 유사 문항은 만들지 마세요:\n${prior.map((q,i)=>`${i+1}. ${q}`).join('\n')}`:'';
-    const prompt=`특수교육 기본 교육과정을 참고하여 ${grade} ${subject} 학습지를 만들어 주세요. 주제는 “${topic}”, 학생의 현재 수행 수준은 “${level}”, 문항 수는 ${count}개입니다. 2022 개정 특수교육 기본 교육과정의 해당 학년군에 맞는 생활 밀착형 활동으로 구성하되, 특정 성취기준의 원문을 확인하지 못했다면 그대로 인용하거나 근거를 지어내지 마세요. 이번 학습지 안에서도 같은 문제를 반복하지 말고, 답이 명확한 문제로 작성해 주세요. 학생 개인정보는 사용하지 마세요.${avoid}\n아래 형식의 유효한 JSON 객체만 출력하고 설명, 마크다운, 코드 블록은 넣지 마세요. 질문과 정답은 모두 한국어로 적어 주세요.\n{"title":"학습지 제목","questions":[{"question":"문제 1","answer":"정답 1"}]}`;
-    $('#sheet-prompt-preview').value=prompt;$('#sheet-import-area').classList.remove('hidden');
-    return prompt;
-  }
-  $('#copy-sheet-prompt').addEventListener('click',async()=>{
-    const copied=await copyText(prepareSheetPrompt());
-    $('#ai-sheet-status').textContent=copied?'요청 문구를 복사했어요. 이제 ② 내 ChatGPT 열기를 누르고 붙여 넣어 주세요.':'자동 복사가 허용되지 않았어요. 아래 요청 문구 직접 보기를 펼쳐 복사해 주세요.';
-  });
-  $('#open-sheet-chatgpt').addEventListener('click',()=>{
-    const prompt=prepareSheetPrompt();
-    const copied=copyPrompt(prompt);
-    $('#ai-sheet-status').textContent=copied?'ChatGPT 입력창에 붙여 넣고 전송하세요. 답변 전체를 복사해 아래에 가져오세요.':'ChatGPT 입력창에 붙여 넣기가 안 되면 아래 요청 문구 직접 보기를 펼쳐 복사해 주세요.';
-  });
-  $('#import-sheet-result').addEventListener('click',()=>{
-    const raw=$('#ai-sheet-result').value.trim();
-    try{
-      const cleaned=raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
-      const data=JSON.parse(cleaned),items=data.questions||data.problems;
-      if(!Array.isArray(items)||items.length<1||items.length>12||items.some(p=>typeof p.question!=='string'||typeof p.answer!=='string'||!p.question.trim()||!p.answer.trim()))throw Error('문항 형식을 확인해 주세요.');
-      const grade=$('#grade').value,subject=$('#subject').value,topic=$('input[name="topic"]:checked').value;
-      const repeated=repeatedIndices(items,grade,subject,topic);
-      if(repeated.length){$('#ai-sheet-status').textContent=`${repeated.join(', ')}번 문항이 이전 문항 또는 이번 학습지의 다른 문항과 비슷합니다. ChatGPT에서 바꿔 달라고 요청해 주세요.`;return}
-      current={grade,subject,topic,title:typeof data.title==='string'?data.title.slice(0,35):''};
-      problems=items.map(p=>({question:p.question.trim().slice(0,500),answer:p.answer.trim().slice(0,200),visual:''}));
-      const saved=rememberQuestions(problems,grade,subject,topic);
-      renderSheet();$('#ai-sheet-status').textContent=`${problems.length}문항을 가져왔어요. ${saved?'이 브라우저에 사용 기록을 저장했습니다.':'브라우저가 사용 기록 저장을 허용하지 않았습니다.'} 정답과 교육과정 적합성을 확인해 주세요.`;
-    }catch(e){$('#ai-sheet-status').textContent='가져오지 못했어요. ChatGPT에 JSON 형식으로 다시 작성해 달라고 요청해 주세요.'}
-  });
-
   function normalizeSentence(raw,tone) {
     let s=raw.trim().replace(/\s+/g,' ').replace(/^[•\-–]\s*/,'').replace(/[.!?。]+$/,'');
     if(!s) return '';
