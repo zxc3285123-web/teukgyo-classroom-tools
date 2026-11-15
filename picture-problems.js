@@ -29,9 +29,27 @@
       if (kind.startsWith('compare')) {
         const other = a === b ? (b === limit ? b-1 : b+1) : b;
         const more = Math.random() < .5;
-        return make(`어느 줄에 ${name}가 더 ${more?'많나요':'적나요'}? A 또는 B를 쓰세요.`, 'A '+row(a,'A')+'B '+row(other,'B'), (a>other)===more?'A':'B');
+        return make(`그림이 더 ${more?'많은 줄은 어디인가요':'적은 줄은 어디인가요'}? A 또는 B를 쓰세요.`,  `<div class="compare-rows"><div><b>A</b>${row(a,'A')}</div><div><b>B</b>${row(other,'B')}</div></div>`, (a>other)===more?'A':'B');
       }
       return make(`그림 속 ${name}의 개수를 세어 쓰세요.`, row(a,'그림'), a+'개');
+    }
+    if (['ordinal','orderBasic'].includes(kind)) {
+      const start = number(0, objects.length-1);
+      const amount = basic ? 4 : 6;
+      const row = Array.from({length:amount}, (_,i)=>objects[(start+i)%objects.length]);
+      const position = number(2,amount);
+      const reverse = Math.random()<.5;
+      return make(`화살표가 있는 쪽부터 세세요. ${position}번째 과일의 이름을 쓰세요.`,
+        symbols(reverse ? [...row.map(entry=>entry[0]),'←'] : ['→',...row.map(entry=>entry[0])],
+          (reverse?'오른쪽':'왼쪽')+'부터 세기. '+row.map(entry=>entry[1]).join(', ')),
+        row[reverse ? amount-position : position-1][1], '순서 세기');
+    }
+    if (['positionBasic','direction','spaceRead','spaceUse'].includes(kind)) {
+      const [position, answer] = pick([[1,'위'],[3,'왼쪽'],[5,'오른쪽'],[7,'아래']]);
+      const board = Array.from({length:9}, (_,i)=>`<span>${i===4?'●':i===position?'★':''}</span>`).join('');
+      return make('별은 동그라미의 어느 쪽에 있나요? 방향을 쓰세요.',
+        `<div class="position-board" role="img" aria-label="동그라미는 가운데, 별은 ${answer}">${board}</div>`,
+        answer, '위치 보고 쓰기');
     }
     if (['patternBasic','patternObject','patternShape','patternUse','matchingRule'].includes(kind) && kind !== 'matchingRule') {
       const offset = number(0,4);
@@ -73,8 +91,10 @@
     }
     if (['dailyTime','daynight','schedule'].includes(kind)) {
       const series = pick([[['🛏','일어나기'],['🥣','아침 먹기'],['🎒','학교 가기']],[['🧼','손 씻기'],['🍽','밥 먹기'],['🪥','이 닦기']],[['☀','해 뜨기'],['🌇','해 지기'],['🌙','밤 되기']]]);
-      const mixed = [series[1], series[2], series[0]];
-      return make('일어나는 순서대로 그림의 번호를 쓰세요.', symbols(mixed.map(([icon,label],i)=>`${i+1} ${icon}<small>${label}</small>`),mixed.map(row=>row[1]).join(', ')), '3 → 1 → 2', '순서 정하기');
+      const order = [0,1,2];
+      for(let i=2;i>0;i--){const j=number(0,i);[order[i],order[j]]=[order[j],order[i]]}
+      const mixed = order.map(index=>series[index]);
+      return make('일어나는 순서대로 그림의 번호를 쓰세요.', symbols(mixed.map(([icon,label],i)=>`<b class="picture-number">${i+1}</b>${icon}<small>${label}</small>`),mixed.map(row=>row[1]).join(', ')), [0,1,2].map(index=>order.indexOf(index)+1).join(' → '), '순서 정하기');
     }
     return null;
   };
