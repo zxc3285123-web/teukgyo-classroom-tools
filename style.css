@@ -15,3 +15,15 @@ body,button,input,select,textarea,.worksheet-page{font-family:Pretendard,'Apple 
 .ai-handoff .history-note{font-size:11px;color:#79867b;margin:10px 0 0}
 .ai-handoff .prompt-copy-button{display:block;width:100%;min-height:44px;margin:0 0 9px;text-align:center;font-size:13px}
 .policy-page{max-width:850px;padding:55px 6% 80px;margin:auto}.policy-page h1{font-size:34px;letter-spacing:-.05em}.policy-page h2{font-size:20px;margin:35px 0 10px}.policy-page p{font-size:14px;line-height:1.9;color:var(--muted);word-break:keep-all}.policy-page a,footer a{color:var(--green);text-underline-offset:3px}
+
+.picture-row{display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:25px;line-height:1.2}
+.picture-row span{display:inline-grid;place-items:center;min-width:28px}
+.picture-row small{font-size:11px;margin-top:4px}
+.picture-equation,.picture-options{font-size:15px;font-weight:700}
+.figure{display:inline-block;width:24px;height:24px;background:#253430;border:1px solid #253430}
+.figure.circle{border-radius:50%}
+.figure.triangle{width:0;height:0;background:none;border:13px solid transparent;border-bottom:23px solid #253430;border-top:0}
+.picture-table{border-collapse:collapse;font-size:12px;line-height:1.25}
+.picture-table caption{text-align:left;font-size:11px;padding-bottom:3px}
+.picture-table th,.picture-table td{border:1px solid #6f806f;padding:3px 7px;text-align:left}
+@media print{.figure,.picture-row{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
