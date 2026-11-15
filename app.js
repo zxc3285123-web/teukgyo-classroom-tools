@@ -40,7 +40,7 @@
   function renderProblem(problem, number, answerSheet){
     let response = '<div class="answer-line"><span>답</span><span class="answer-box"></span></div>';
     if (problem.type === 'ox') {
-      response = '<div class="answer-line ox-answer"><span>○ 맞아요</span><span>× 틀려요</span></div>';
+      response = '<div class="answer-line ox-answer"><span><b class="mark-symbol">○</b> 맞아요</span><span><b class="mark-symbol">×</b> 틀려요</span></div>';
     }
     if (problem.type === 'match' || problem.responseInVisual) response = '';
     if (answerSheet) response = `<div class="answer-value">정답: ${escapeHTML(problem.answer)}</div>`;
@@ -52,7 +52,7 @@
     return `<section class="problem">
       <div class="problem-top"><span class="problem-num">${number}</span>
         <div><span class="problem-type">${escapeHTML(problem.typeLabel || '풀기')}</span>
-        <div class="problem-question">${escapeHTML(problem.question)}</div></div>
+        <div class="problem-question">${escapeHTML(problem.question)}${problem.candidate ? `<span class="problem-candidate">제시된 답: ${escapeHTML(problem.candidate)}</span>` : ''}</div></div>
       </div>${visual}${response}
     </section>`;
   }
@@ -78,9 +78,9 @@
     const wrong=choices.find(choice=>choice!==String(p.answer));
     if(mode===2&&wrong&&!/고르|보기|찾으세요/.test(p.question)){
       const candidate=Math.random()<.5?String(p.answer):wrong;
-      p.question=`${p.question} ‘${candidate}’이(가) 알맞은 답인가요?`;
+      p.candidate=candidate;
       p.answer=candidate===String(p.answer)?'○':'×';
-      p.visual='';p.type='ox';p.typeLabel='○× 판단';return p;
+      p.visual='';p.type='ox';p.typeLabel='제시된 답이 맞으면 ○, 틀리면 ×';return p;
     }
     if(mode===3&&wrong&&!/보기|그림|표를|고르/.test(p.question)){
       const second=C.createProblems(current.topic,current.level,current.grade,5,[...used]).find(item=>!used.has(item.key)&&item.answer!==p.answer&&readChoices(item).length&&!/보기|그림|표를|고르/.test(item.question));
@@ -145,7 +145,7 @@
   $('#paper-title').addEventListener('input',()=>{if(current.topic){current.title=$('#paper-title').value.trim();renderSheet()}});
   $('#worksheet-form').addEventListener('submit',e=>{e.preventDefault();generate(true)});
   $('#answer-key').addEventListener('change',renderSheet);
-  $('#print-button').addEventListener('click',()=>{rememberQuestions();window.print()});
+  $('#print-button').addEventListener('click',async ()=>{rememberQuestions();await document.fonts.ready;window.print()});
   updateSubjects();
 
   async function copyText(value){
