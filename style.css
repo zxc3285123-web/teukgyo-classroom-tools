@@ -61,3 +61,17 @@ body,button,input,select,textarea,.worksheet-page{font-family:Pretendard,'Apple 
   #print-root .problem-question{font-size:18px}
   #print-root .sheet-footer{position:absolute;bottom:9mm;left:14mm;right:14mm}
 }
+
+.worksheet-options{display:grid;gap:6px;list-style:none;padding:0;margin:0;width:100%}
+.worksheet-options li,.compare-rows>div{display:flex;align-items:center;gap:10px;padding:5px 9px;border:1px solid #b2bfb6;border-radius:6px;line-height:1.35}
+.option-number,.picture-number,.compare-rows b{display:inline-grid;place-items:center;flex:none;min-width:24px;height:24px;border:1px solid #516c5b;border-radius:50%;font-size:14px;font-variant-numeric:tabular-nums}
+.compare-rows{display:grid;gap:6px;width:100%}
+.picture-number{margin-bottom:4px}
+.match-task{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px 7px;line-height:1.45}
+.match-points{font-size:11px;white-space:nowrap;color:#273b2f}
+.problem-visual:has(.picture-table),.problem-visual:has(.picture-equation),.problem-visual:has(.picture-options){display:grid;justify-items:start}
+.picture-table{max-width:100%}
+.problem-question{word-break:keep-all}
+@media print{#print-root .problem{padding:9px 12px}#print-root .problem-list{gap:10px}#print-root .sheet-instruction{margin:10px 0}#print-root .problem-visual{margin-top:7px}}
+.position-board{display:grid;grid-template-columns:repeat(3,35px);border:1px solid #6f8075}
+.position-board span{display:grid;place-items:center;height:31px;border:1px solid #a4b2a8;font-size:22px}
