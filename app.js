@@ -33,35 +33,52 @@
       <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2><span>${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}</span></div>
       <div class="sheet-meta"><b>이름 <span></span></b><b>날짜 <span></span></b></div>
       <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'그림과 문제를 살펴보고, 문항에 나온 방법대로 풀어 보세요.'}</div>
-      <div class="problem-list">${items.map((p,i)=>`<div class="problem"><div class="problem-top"><span class="problem-num">${page*4+i+1}</span><div><span class="problem-type">${escapeHTML(p.typeLabel||'풀기')}</span><div class="problem-question">${escapeHTML(p.question)}</div></div></div>${!answer&&p.visual?`<div class="problem-visual">${p.visual}</div>`:''}${answer?`<div class="answer-value">정답: ${escapeHTML(p.answer)}</div>`:p.type==='ox'?'<div class="answer-line ox-answer">○　 ×</div>':p.type==='match'?'<div class="answer-line">선을 이어 보세요.</div>':'<div class="answer-line">답 <span class="answer-box"></span></div>'}</div>`).join('')}</div>
+      <div class="problem-list">${items.map((problem,index)=>renderProblem(problem,page*3+index+1,answer)).join('')}</div>
       <div class="sheet-footer"><span>한 걸음씩, 나의 속도로</span><span>${page+1} / ${total}</span></div>
     </article>`;
   }
+  function renderProblem(problem, number, answerSheet){
+    let response = '<div class="answer-line"><span>답</span><span class="answer-box"></span></div>';
+    if (problem.type === 'ox') {
+      response = '<div class="answer-line ox-answer"><span>○ 맞아요</span><span>× 틀려요</span></div>';
+    }
+    if (problem.type === 'match' || problem.responseInVisual) response = '';
+    if (answerSheet) response = `<div class="answer-value">정답: ${escapeHTML(problem.answer)}</div>`;
+    const visual = !answerSheet && problem.visual
+      ? `<div class="problem-visual">${problem.visual}</div>` : '';
+    return `<section class="problem">
+      <div class="problem-top"><span class="problem-num">${number}</span>
+        <div><span class="problem-type">${escapeHTML(problem.typeLabel || '풀기')}</span>
+        <div class="problem-question">${escapeHTML(problem.question)}</div></div>
+      </div>${visual}${response}
+    </section>`;
+  }
+
   function renderSheet(){
-    const chunks=[];for(let i=0;i<problems.length;i+=4)chunks.push(problems.slice(i,i+4));
+    const chunks=[];for(let i=0;i<problems.length;i+=3)chunks.push(problems.slice(i,i+3));
     const html=chunks.map((items,i)=>sheetPage(items,i,chunks.length)).join('');
     $('#worksheet-preview').innerHTML=html;
     $('#print-root').innerHTML=html+($('#answer-key').checked?chunks.map((items,i)=>sheetPage(items,i,chunks.length,true)).join(''):'');
     $('#preview-status').textContent=`${problems.length}문항 · ${chunks.length}쪽 준비됨`;
   }
-  function varyProblem(problem,index,subject){
+  function varyProblem(problem,index){
     const p={...problem};
     const optionText=p.visual?.match(/보기:\s*([^<]+)/)?.[1]||'';
     const choices=optionText.split('·').map(s=>s.trim()).filter(Boolean);
     if(!choices.length){p.type='write';p.typeLabel='직접 쓰기';return p}
     const mode=index%4;
     if(mode===0){p.type='choice';p.typeLabel='보기에서 고르기';return p}
-    if(mode===1){p.type='write';p.typeLabel='직접 쓰기';p.visual='';return p}
+    if(mode===1 && !/고르|보기|찾으세요/.test(p.question)){p.type='write';p.typeLabel='직접 쓰기';p.visual='';return p}
     const wrong=choices.find(choice=>choice!==String(p.answer));
-    if(mode===2&&wrong){
+    if(mode===2&&wrong&&!/고르|보기|찾으세요/.test(p.question)){
       const candidate=Math.random()<.5?String(p.answer):wrong;
       p.question=`${p.question} 답이 ‘${candidate}’이면 ○, 아니면 ×를 표시하세요.`;
       p.answer=candidate===String(p.answer)?'○':'×';
       p.visual='';p.type='ox';p.typeLabel='○× 판단';return p;
     }
-    if(mode===3&&wrong){
-      const second=C.createProblems(current.topic,current.level,current.grade,5,[...previousKeys(current.grade,current.subject,current.topic),p.key]).find(item=>item.key!==p.key&&item.answer!==p.answer);
-      if(!second){p.type='write';p.typeLabel='직접 쓰기';p.visual='';return p}
+    if(mode===3&&wrong&&!/보기|그림|표를|고르/.test(p.question)){
+      const second=C.createProblems(current.topic,current.level,current.grade,5,[...previousKeys(current.grade,current.subject,current.topic),p.key]).find(item=>item.key!==p.key&&item.answer!==p.answer&&item.visual?.includes('보기:')&&!/보기|그림|표를|고르/.test(item.question));
+      if(!second){p.type='choice';p.typeLabel='보기에서 고르기';return p}
       p.sourceKeys=[p.key,second.key];
       p.type='match';p.typeLabel='선 잇기';
       p.question='왼쪽 물음과 알맞은 답을 선으로 이으세요.';
@@ -71,8 +88,7 @@
       p.answer=reverse?'①–㉡, ②–㉠':'①–㉠, ②–㉡';
       return p;
     }
-    p.type=subject==='math'?'write':'choice';p.typeLabel=p.type==='write'?'직접 쓰기':'보기에서 고르기';
-    if(p.type==='write')p.visual='';
+    p.type='choice';p.typeLabel='보기에서 고르기';
     return p;
   }
   function generate(newSheet=false){
@@ -93,7 +109,7 @@
           return {...picture, key};
         }
       }
-      return varyProblem(problem, (index + Math.floor(index / 4)) % 4, current.subject);
+      return varyProblem(problem, (index + Math.floor(index / 4)) % 4);
     });
     renderSheet();
     if(newSheet)rememberQuestions();
