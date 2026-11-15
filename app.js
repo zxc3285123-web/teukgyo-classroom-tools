@@ -44,8 +44,11 @@
     }
     if (problem.type === 'match' || problem.responseInVisual) response = '';
     if (answerSheet) response = `<div class="answer-value">정답: ${escapeHTML(problem.answer)}</div>`;
-    const visual = !answerSheet && problem.visual
-      ? `<div class="problem-visual">${problem.visual}</div>` : '';
+    const choices = problem.type === 'choice' ? readChoices(problem) : [];
+    const content = choices.length ? `<ol class="worksheet-options">${choices.map((choice,i)=>`<li><span class="option-number">${i+1}</span><span>${escapeHTML(choice)}</span></li>`).join('')}</ol>` : problem.visual;
+    if (!answerSheet && choices.length) response = '';
+    const visual = !answerSheet && content
+      ? `<div class="problem-visual">${content}</div>` : '';
     return `<section class="problem">
       <div class="problem-top"><span class="problem-num">${number}</span>
         <div><span class="problem-type">${escapeHTML(problem.typeLabel || '풀기')}</span>
@@ -61,34 +64,41 @@
     $('#print-root').innerHTML=html+($('#answer-key').checked?chunks.map((items,i)=>sheetPage(items,i,chunks.length,true)).join(''):'');
     $('#preview-status').textContent=`${problems.length}문항 · ${chunks.length}쪽 준비됨`;
   }
-  function varyProblem(problem,index){
+  function readChoices(problem){
+    const match = problem.visual?.match(/^<div class="word-choices">보기:\s*([^<]+)<\/div>$/);
+    return match ? match[1].split(/　·　/).map(option=>option.trim()).filter(Boolean) : [];
+  }
+  function varyProblem(problem,index,used){
     const p={...problem};
-    const optionText=p.visual?.match(/보기:\s*([^<]+)/)?.[1]||'';
-    const choices=optionText.split('·').map(s=>s.trim()).filter(Boolean);
+    const choices=readChoices(p);
     if(!choices.length){p.type='write';p.typeLabel='직접 쓰기';return p}
     const mode=index%4;
-    if(mode===0){p.type='choice';p.typeLabel='보기에서 고르기';return p}
+    if(mode===0){p.type='choice';p.typeLabel='알맞은 답에 ○ 하기';return p}
     if(mode===1 && !/고르|보기|찾으세요/.test(p.question)){p.type='write';p.typeLabel='직접 쓰기';p.visual='';return p}
     const wrong=choices.find(choice=>choice!==String(p.answer));
     if(mode===2&&wrong&&!/고르|보기|찾으세요/.test(p.question)){
       const candidate=Math.random()<.5?String(p.answer):wrong;
-      p.question=`${p.question} 답이 ‘${candidate}’이면 ○, 아니면 ×를 표시하세요.`;
+      p.question=`${p.question} ‘${candidate}’이(가) 알맞은 답인가요?`;
       p.answer=candidate===String(p.answer)?'○':'×';
       p.visual='';p.type='ox';p.typeLabel='○× 판단';return p;
     }
     if(mode===3&&wrong&&!/보기|그림|표를|고르/.test(p.question)){
-      const second=C.createProblems(current.topic,current.level,current.grade,5,[...previousKeys(current.grade,current.subject,current.topic),p.key]).find(item=>item.key!==p.key&&item.answer!==p.answer&&item.visual?.includes('보기:')&&!/보기|그림|표를|고르/.test(item.question));
-      if(!second){p.type='choice';p.typeLabel='보기에서 고르기';return p}
+      const second=C.createProblems(current.topic,current.level,current.grade,5,[...used]).find(item=>!used.has(item.key)&&item.answer!==p.answer&&readChoices(item).length&&!/보기|그림|표를|고르/.test(item.question));
+      if(!second){p.type='choice';p.typeLabel='알맞은 답에 ○ 하기';return p}
+      used.add(second.key);
       p.sourceKeys=[p.key,second.key];
       p.type='match';p.typeLabel='선 잇기';
       p.question='왼쪽 물음과 알맞은 답을 선으로 이으세요.';
       const reverse=Math.random()<.5;
       const first=reverse?second.answer:p.answer,other=reverse?p.answer:second.answer;
-      p.visual=`<div class="match-task"><div>① ${escapeHTML(problem.question)}<br>② ${escapeHTML(second.question)}</div><div class="match-guides">⋯<br>⋯</div><div>㉠ ${escapeHTML(first)}<br>㉡ ${escapeHTML(other)}</div></div>`;
+      p.visual=`<div class="match-task">
+        <span>① ${escapeHTML(problem.question)}</span><span class="match-points" aria-hidden="true">●　　●</span><span>㉠ ${escapeHTML(first)}</span>
+        <span>② ${escapeHTML(second.question)}</span><span class="match-points" aria-hidden="true">●　　●</span><span>㉡ ${escapeHTML(other)}</span>
+      </div>`;
       p.answer=reverse?'①–㉡, ②–㉠':'①–㉠, ②–㉡';
       return p;
     }
-    p.type='choice';p.typeLabel='보기에서 고르기';
+    p.type='choice';p.typeLabel='알맞은 답에 ○ 하기';
     return p;
   }
   function generate(newSheet=false){
@@ -98,6 +108,7 @@
     const avoided = [...previousKeys(current.grade,current.subject,current.topic), ...previous];
     const used = new Set(avoided);
     const base = C.createProblems(current.topic,current.level,current.grade,current.count,avoided);
+    base.forEach(problem=>used.add(problem.key));
     problems = base.map((problem, index) => {
       if (index % 2 === 0) {
         for (let attempt = 0; attempt < 32; attempt++) {
@@ -109,7 +120,7 @@
           return {...picture, key};
         }
       }
-      return varyProblem(problem, (index + Math.floor(index / 4)) % 4);
+      return varyProblem(problem, (index + Math.floor(index / 4)) % 4, used);
     });
     renderSheet();
     if(newSheet)rememberQuestions();
