@@ -27,3 +27,37 @@ body,button,input,select,textarea,.worksheet-page{font-family:Pretendard,'Apple 
 .picture-table caption{text-align:left;font-size:11px;padding-bottom:3px}
 .picture-table th,.picture-table td{border:1px solid #6f806f;padding:3px 7px;text-align:left}
 @media print{.figure,.picture-row{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Worksheet typography and answer space for screen and A4. */
+#worksheet-preview{width:100%;min-width:0}
+.sheet-frame{display:block;padding:12px;max-height:none}
+.worksheet-page{width:100%;max-width:210mm;min-height:0;margin:0 auto;padding:clamp(14px,3vw,42px);transform:none}
+.sheet-overline,.sheet-title-row span,.sheet-footer{color:#3c5348}
+.sheet-title-row{flex-wrap:wrap}
+.sheet-meta{font-size:15px}
+.sheet-meta span{min-width:60px}
+.sheet-instruction{font-size:15px;color:#223b2d;margin:14px 0}
+.problem-list{gap:14px}
+.problem{padding:12px;border:1px solid #8b9b91;border-radius:9px}
+.problem-question{font-size:19px;line-height:1.45;letter-spacing:0;overflow-wrap:anywhere}
+.problem-num{width:28px;height:28px;font-size:14px;color:#203c2d;border:2px solid #416750}
+.problem-type{font-size:13px;color:#234b35;margin-bottom:4px}
+.problem-visual,.answer-line{margin-left:0;gap:9px}
+.problem-visual{align-items:flex-start}
+.word-choices,.reading-passage,.match-task,.picture-table{font-size:15px;color:#1d3024}
+.picture-row{font-size:32px;gap:8px;color:#192e20}
+.picture-row small,.picture-table caption{font-size:13px}
+.picture-equation,.picture-options{font-size:18px}
+.picture-options{display:grid;gap:6px;width:100%}
+.picture-options span,.ox-answer span{border:1px solid #789481;border-radius:6px;padding:5px 9px}
+.answer-line{font-size:15px;color:#253c30}
+.answer-box{flex:1;height:36px;border:1.5px solid #526f5d;border-radius:6px}
+.picture-row .draw-cell{width:55px;height:42px;border:1.5px dashed #526f5d;border-radius:5px}
+.inline-blank{display:inline-block;width:32px;height:25px;border:1.5px solid #526f5d;border-radius:4px;vertical-align:middle}
+.sheet-footer{position:static;margin-top:18px;font-size:11px}
+@media(max-width:640px){.sheet-title-row h2{font-size:22px}.problem-question{font-size:18px}.sheet-meta{flex-wrap:wrap}}
+@media print{
+  #print-root .worksheet-page{padding:12mm 14mm}
+  #print-root .problem-question{font-size:18px}
+  #print-root .sheet-footer{position:absolute;bottom:9mm;left:14mm;right:14mm}
+}
