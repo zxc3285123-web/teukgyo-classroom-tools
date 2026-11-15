@@ -15,7 +15,7 @@
     if(!current.topic||!problems.length)return;
     const {grade,subject,topic}=current;
     const scope=historyScope(grade,subject,topic);
-    questionHistory[scope]=[...previousKeys(grade,subject,topic),...problems.map(p=>p.key)].slice(-300);
+    questionHistory[scope]=[...previousKeys(grade,subject,topic),...problems.flatMap(p=>p.sourceKeys||[p.key])].slice(-300);
     try{localStorage.setItem(historyKey,JSON.stringify(questionHistory))}catch{}
   }
 
@@ -32,8 +32,8 @@
       <div class="sheet-overline">2022 특수교육 기본 교육과정 · ${escapeHTML(C.bandName(current.grade))}</div>
       <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2><span>${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}</span></div>
       <div class="sheet-meta"><b>이름 <span></span></b><b>날짜 <span></span></b></div>
-      <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'문제를 읽고 알맞은 답을 적어 보세요.'}</div>
-      <div class="problem-list">${items.map((p,i)=>`<div class="problem"><div class="problem-top"><span class="problem-num">${page*4+i+1}</span><div class="problem-question">${escapeHTML(p.question)}</div></div>${!answer&&p.visual?`<div class="problem-visual">${p.visual}</div>`:''}${answer?`<div class="answer-value">정답: ${escapeHTML(p.answer)}</div>`:'<div class="answer-line">답 <span class="answer-box"></span></div>'}</div>`).join('')}</div>
+      <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'문항마다 고르기·직접 쓰기·○×·선 잇기 등의 방법으로 풀어 보세요.'}</div>
+      <div class="problem-list">${items.map((p,i)=>`<div class="problem"><div class="problem-top"><span class="problem-num">${page*4+i+1}</span><div><span class="problem-type">${escapeHTML(p.typeLabel||'풀기')}</span><div class="problem-question">${escapeHTML(p.question)}</div></div></div>${!answer&&p.visual?`<div class="problem-visual">${p.visual}</div>`:''}${answer?`<div class="answer-value">정답: ${escapeHTML(p.answer)}</div>`:p.type==='ox'?'<div class="answer-line ox-answer">○　 ×</div>':p.type==='match'?'<div class="answer-line">선을 이어 보세요.</div>':'<div class="answer-line">답 <span class="answer-box"></span></div>'}</div>`).join('')}</div>
       <div class="sheet-footer"><span>한 걸음씩, 나의 속도로</span><span>${page+1} / ${total}</span></div>
     </article>`;
   }
@@ -44,11 +44,42 @@
     $('#print-root').innerHTML=html+($('#answer-key').checked?chunks.map((items,i)=>sheetPage(items,i,chunks.length,true)).join(''):'');
     $('#preview-status').textContent=`${problems.length}문항 · ${chunks.length}쪽 준비됨`;
   }
+  function varyProblem(problem,index,subject){
+    const p={...problem};
+    const optionText=p.visual?.match(/보기:\s*([^<]+)/)?.[1]||'';
+    const choices=optionText.split('·').map(s=>s.trim()).filter(Boolean);
+    if(!choices.length){p.type='write';p.typeLabel='직접 쓰기';return p}
+    const mode=index%4;
+    if(mode===0){p.type='choice';p.typeLabel='보기에서 고르기';return p}
+    if(mode===1){p.type='write';p.typeLabel='직접 쓰기';p.visual='';return p}
+    const wrong=choices.find(choice=>choice!==String(p.answer));
+    if(mode===2&&wrong){
+      const candidate=Math.random()<.5?String(p.answer):wrong;
+      p.question=`${p.question} 답이 ‘${candidate}’이면 ○, 아니면 ×를 표시하세요.`;
+      p.answer=candidate===String(p.answer)?'○':'×';
+      p.visual='';p.type='ox';p.typeLabel='○× 판단';return p;
+    }
+    if(mode===3&&wrong){
+      const second=C.createProblems(current.topic,current.level,current.grade,5,[...previousKeys(current.grade,current.subject,current.topic),p.key]).find(item=>item.key!==p.key&&item.answer!==p.answer);
+      if(!second){p.type='write';p.typeLabel='직접 쓰기';p.visual='';return p}
+      p.sourceKeys=[p.key,second.key];
+      p.type='match';p.typeLabel='선 잇기';
+      p.question='왼쪽 물음과 알맞은 답을 선으로 이으세요.';
+      const reverse=Math.random()<.5;
+      const first=reverse?second.answer:p.answer,other=reverse?p.answer:second.answer;
+      p.visual=`<div class="match-task"><div>① ${escapeHTML(problem.question)}<br>② ${escapeHTML(second.question)}</div><div class="match-guides">⋯<br>⋯</div><div>㉠ ${escapeHTML(first)}<br>㉡ ${escapeHTML(other)}</div></div>`;
+      p.answer=reverse?'①–㉡, ②–㉠':'①–㉠, ②–㉡';
+      return p;
+    }
+    p.type=subject==='math'?'write':'choice';p.typeLabel=p.type==='write'?'직접 쓰기':'보기에서 고르기';
+    if(p.type==='write')p.visual='';
+    return p;
+  }
   function generate(newSheet=false){
     const topic=$('input[name="topic"]:checked');if(!topic)return;
-    const previous=problems.map(p=>p.key).filter(Boolean);
+    const previous=problems.flatMap(p=>p.sourceKeys||[p.key]).filter(Boolean);
     current={grade:$('#grade').value,subject:$('#subject').value,topic:topic.value,level:$('input[name="level"]:checked').value,count:Number($('#count').value),title:$('#paper-title').value.trim()};
-    problems=C.createProblems(current.topic,current.level,current.grade,current.count,[...previousKeys(current.grade,current.subject,current.topic),...previous]);
+    problems=C.createProblems(current.topic,current.level,current.grade,current.count,[...previousKeys(current.grade,current.subject,current.topic),...previous]).map((p,i)=>varyProblem(p,i,current.subject));
     renderSheet();
     if(newSheet)rememberQuestions();
   }
