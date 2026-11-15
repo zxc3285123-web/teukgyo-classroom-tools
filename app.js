@@ -32,7 +32,7 @@
       <div class="sheet-overline">2022 특수교육 기본 교육과정 · ${escapeHTML(C.bandName(current.grade))}</div>
       <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2><span>${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}</span></div>
       <div class="sheet-meta"><b>이름 <span></span></b><b>날짜 <span></span></b></div>
-      <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'문항마다 고르기·직접 쓰기·○×·선 잇기 등의 방법으로 풀어 보세요.'}</div>
+      <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'그림과 문제를 살펴보고, 문항에 나온 방법대로 풀어 보세요.'}</div>
       <div class="problem-list">${items.map((p,i)=>`<div class="problem"><div class="problem-top"><span class="problem-num">${page*4+i+1}</span><div><span class="problem-type">${escapeHTML(p.typeLabel||'풀기')}</span><div class="problem-question">${escapeHTML(p.question)}</div></div></div>${!answer&&p.visual?`<div class="problem-visual">${p.visual}</div>`:''}${answer?`<div class="answer-value">정답: ${escapeHTML(p.answer)}</div>`:p.type==='ox'?'<div class="answer-line ox-answer">○　 ×</div>':p.type==='match'?'<div class="answer-line">선을 이어 보세요.</div>':'<div class="answer-line">답 <span class="answer-box"></span></div>'}</div>`).join('')}</div>
       <div class="sheet-footer"><span>한 걸음씩, 나의 속도로</span><span>${page+1} / ${total}</span></div>
     </article>`;
@@ -79,7 +79,22 @@
     const topic=$('input[name="topic"]:checked');if(!topic)return;
     const previous=problems.flatMap(p=>p.sourceKeys||[p.key]).filter(Boolean);
     current={grade:$('#grade').value,subject:$('#subject').value,topic:topic.value,level:$('input[name="level"]:checked').value,count:Number($('#count').value),title:$('#paper-title').value.trim()};
-    problems=C.createProblems(current.topic,current.level,current.grade,current.count,[...previousKeys(current.grade,current.subject,current.topic),...previous]).map((p,i)=>varyProblem(p,i,current.subject));
+    const avoided = [...previousKeys(current.grade,current.subject,current.topic), ...previous];
+    const used = new Set(avoided);
+    const base = C.createProblems(current.topic,current.level,current.grade,current.count,avoided);
+    problems = base.map((problem, index) => {
+      if (index % 2 === 0) {
+        for (let attempt = 0; attempt < 32; attempt++) {
+          const picture = window.pictureProblem(current.topic, current.level);
+          if (!picture) break;
+          const key = JSON.stringify([picture.question, picture.visual, picture.answer]);
+          if (used.has(key)) continue;
+          used.add(key);
+          return {...picture, key};
+        }
+      }
+      return varyProblem(problem, (index + Math.floor(index / 4)) % 4, current.subject);
+    });
     renderSheet();
     if(newSheet)rememberQuestions();
   }
