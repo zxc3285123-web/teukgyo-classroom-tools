@@ -92,3 +92,16 @@ html{font-synthesis:none}
 .answer-page .problem-question{font-size:15px}
 @media(max-width:640px){.problem-question{font-size:18px}}
 @media print{#print-root .answer-page .problem-question{font-size:15px}}
+
+.worksheet-type-settings .field-row{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:0}
+.worksheet-page[data-font="gothic"]{font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans CJK KR',sans-serif}
+.worksheet-page[data-font="serif"]{font-family:'AppleMyungjo','Batang','Noto Serif CJK KR',serif}
+.worksheet-page[data-size="large"]{--sheet-text:23px;--sheet-detail:19px;--sheet-title:30px;--sheet-answer:43px}
+.worksheet-page[data-size="largest"]{--sheet-text:27px;--sheet-detail:22px;--sheet-title:34px;--sheet-answer:50px}
+.worksheet-page:is([data-size="large"],[data-size="largest"]) :is(.problem-question,.picture-options,.picture-equation){font-size:var(--sheet-text)}
+.worksheet-page:is([data-size="large"],[data-size="largest"]) .sheet-title-row h2{font-size:var(--sheet-title)}
+.worksheet-page:is([data-size="large"],[data-size="largest"]) :is(.problem-type,.worksheet-options,.word-choices,.reading-passage,.match-task,.picture-table,.picture-table caption,.picture-row small,.answer-line,.answer-value,.sheet-meta,.sheet-instruction){font-size:var(--sheet-detail)}
+.worksheet-page:is([data-size="large"],[data-size="largest"]) .answer-box{height:var(--sheet-answer)}
+@media print{
+  #print-root .worksheet-page:is([data-size="large"],[data-size="largest"]) .problem-question{font-size:var(--sheet-text)}
+}
