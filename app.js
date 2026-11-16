@@ -25,15 +25,15 @@
     $('#letter-panel').classList.toggle('hidden',button.dataset.tab!=='letter');
   }));
 
-  function sheetPage(items,page,total,answer=false){
+  function sheetPage(items,page,total,layout,answer=false){
     const title=escapeHTML(current.title||`오늘의 ${C.topicInfo[current.topic][0]}`);
     const subject=C.subjectNames[current.subject],topic=C.topicInfo[current.topic][0];
-    return `<article class="worksheet-page${answer?' answer-page':''}">
+    return `<article class="worksheet-page${answer?' answer-page':''}" data-font="${layout.font}" data-size="${layout.size}">
       <div class="sheet-overline">2022 특수교육 기본 교육과정 · ${escapeHTML(C.bandName(current.grade))}</div>
       <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2><span>${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}</span></div>
       <div class="sheet-meta"><b>이름 <span></span></b><b>날짜 <span></span></b></div>
       <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'그림과 문제를 살펴보고, 문항에 나온 방법대로 풀어 보세요.'}</div>
-      <div class="problem-list">${items.map((problem,index)=>renderProblem(problem,page*3+index+1,answer)).join('')}</div>
+      <div class="problem-list">${items.map((problem,index)=>renderProblem(problem,page*layout.perPage+index+1,answer)).join('')}</div>
       <div class="sheet-footer"><span>한 걸음씩, 나의 속도로</span><span>${page+1} / ${total}</span></div>
     </article>`;
   }
@@ -58,10 +58,18 @@
   }
 
   function renderSheet(){
-    const chunks=[];for(let i=0;i<problems.length;i+=3)chunks.push(problems.slice(i,i+3));
-    const html=chunks.map((items,i)=>sheetPage(items,i,chunks.length)).join('');
-    $('#worksheet-preview').innerHTML=html;
-    $('#print-root').innerHTML=html+($('#answer-key').checked?chunks.map((items,i)=>sheetPage(items,i,chunks.length,true)).join(''):'');
+    const font = $('#worksheet-font').value;
+    const size = $('#worksheet-size').value;
+    const perPage = size === 'normal' ? 3 : 2;
+    const layout = {font, size, perPage};
+    const chunks = [];
+    for (let i=0; i<problems.length; i+=perPage) {
+      chunks.push(problems.slice(i,i+perPage));
+    }
+    const html = chunks.map((items,i)=>sheetPage(items,i,chunks.length,layout)).join('');
+    $('#worksheet-preview').innerHTML = html;
+    $('#print-root').innerHTML = html + ($('#answer-key').checked
+      ? chunks.map((items,i)=>sheetPage(items,i,chunks.length,layout,true)).join('') : '');
     $('#preview-status').textContent=`${problems.length}문항 · ${chunks.length}쪽 준비됨`;
   }
   function readChoices(problem){
@@ -144,6 +152,18 @@
   $('#count').addEventListener('change',()=>generate());
   $('#paper-title').addEventListener('input',()=>{if(current.topic){current.title=$('#paper-title').value.trim();renderSheet()}});
   $('#worksheet-form').addEventListener('submit',e=>{e.preventDefault();generate(true)});
+  for (const selector of ['#worksheet-font', '#worksheet-size']) {
+    const control = $(selector);
+    const key = 'teukgyo:' + control.id;
+    try {
+      const saved = localStorage.getItem(key);
+      if (Array.from(control.options).some(option=>option.value===saved)) control.value=saved;
+    } catch {}
+    control.addEventListener('change',()=>{
+      try { localStorage.setItem(key,control.value); } catch {}
+      renderSheet();
+    });
+  }
   $('#answer-key').addEventListener('change',renderSheet);
   $('#print-button').addEventListener('click',async ()=>{rememberQuestions();await document.fonts.ready;window.print()});
   updateSubjects();
