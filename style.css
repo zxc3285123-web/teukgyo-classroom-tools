@@ -128,3 +128,57 @@ html{font-synthesis:none}
  #print-root .worksheet-page[data-size] .problem-question{font-size:calc(19px * var(--worksheet-scale))}
  #print-root .worksheet-page[data-size] .answer-value{overflow-wrap:anywhere}
 }
+
+/* Match the measurement box to the printable A4 content area. */
+@page { size: A4 portrait; margin: 12mm 13mm; }
+
+#print-root.measuring-sheet {
+  display: block;
+  position: fixed;
+  visibility: hidden;
+  pointer-events: none;
+  inset: 0 auto auto -10000px;
+}
+#print-root.measuring-sheet .worksheet-page {
+  width: 184mm;
+  height: 272mm;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+#print-root .sheet-edit-button { display: none; }
+.worksheet-page .problem-top > div { min-width: 0; overflow-wrap: anywhere; }
+.worksheet-page .problem-visual { max-width: 100%; overflow-wrap: anywhere; }
+.worksheet-page .sheet-footer { position: static; }
+#print-root .worksheet-page {
+  display: flex;
+  flex-direction: column;
+}
+#print-root .worksheet-page > :not(.sheet-footer) { flex: none; }
+#print-root .worksheet-page .sheet-footer {
+  position: static;
+  margin: auto 0 0;
+  padding-top: 3mm;
+}
+#print-root .problem-list { gap: 4mm; padding-bottom: 5mm; }
+#print-root .problem { padding: 3mm; }
+#print-root .problem-visual { margin-top: 2mm; }
+#print-root .sheet-instruction { margin: 3mm 0 4mm; }
+#print-root .answer-line .answer-box { min-height: 11mm; }
+#print-root .sheet-title-row h2 { overflow-wrap: anywhere; }
+#print-root .answer-value { overflow-wrap: anywhere; }
+
+@media print {
+  html, body { width: auto; }
+  #print-root .worksheet-page {
+    width: 184mm;
+    height: auto;
+    min-height: 272.5mm;
+    padding: 0;
+    max-width: none;
+  }
+  #print-root .worksheet-page > .sheet-footer { position: static; }
+  #print-root .problem { break-inside: avoid-page; }
+  #print-root .worksheet-page[data-size] .problem-question { overflow-wrap: anywhere; }
+}
