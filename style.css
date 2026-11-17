@@ -105,3 +105,26 @@ html{font-synthesis:none}
 @media print{
   #print-root .worksheet-page:is([data-size="large"],[data-size="largest"]) .problem-question{font-size:var(--sheet-text)}
 }
+
+.size-stepper{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;gap:4px}
+.size-stepper button,.sheet-edit-button{border:1px solid #7c9486;border-radius:7px;background:#fff;color:#244f43;font:inherit}
+.size-stepper button{font-size:18px}
+.size-stepper button:disabled{opacity:.4;cursor:default}
+.size-stepper select{padding-inline:6px;background-image:none;text-align:center}
+.sheet-edit-button{font-size:13px;padding:4px 8px}
+.problem-top .sheet-edit-button{order:1;margin-left:auto;flex:none}
+.problem-editor{width:min(92vw,500px);max-height:85vh;border:1px solid #8b9b91;border-radius:14px;padding:22px;color:#253430}
+.problem-editor::backdrop{background:#192e2066}
+.problem-editor h2{margin:0 0 15px;font-size:23px}
+.editor-field{display:grid;gap:6px;margin-bottom:12px;font-weight:600}
+.editor-field input{width:100%;padding:10px;border:1px solid #8b9b91;border-radius:7px;font-weight:400}
+.problem-edit-actions{display:flex;justify-content:flex-end;gap:8px}
+.problem-edit-actions .primary-button{width:auto}
+.worksheet-page[data-size] .problem-question{font-size:calc(19px * var(--worksheet-scale));white-space:pre-line}
+.worksheet-page[data-size] .sheet-title-row h2{font-size:calc(27px * var(--worksheet-scale))}
+.worksheet-page[data-size] :is(.worksheet-options,.word-choices,.reading-passage,.match-task,.picture-table,.answer-line,.answer-value,.sheet-instruction){font-size:calc(15px * var(--worksheet-scale))}
+@media print{
+ #print-root .sheet-edit-button{display:none}
+ #print-root .worksheet-page[data-size] .problem-question{font-size:calc(19px * var(--worksheet-scale))}
+ #print-root .worksheet-page[data-size] .answer-value{overflow-wrap:anywhere}
+}
