@@ -211,6 +211,7 @@
     const base = C.createProblems(current.topic,current.level,current.grade,current.count,avoided);
     base.forEach(problem=>used.add(problem.key));
     problems = base.map((problem, index) => {
+      if (current.subject === 'social' || current.subject === 'career') return problem;
       const maker = index % 3 === 0 && generatedProblem(current.topic,current.level) ? generatedProblem
         : index % 2 === 0 ? window.pictureProblem : null;
       if (maker) {
