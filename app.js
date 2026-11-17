@@ -208,7 +208,7 @@
     }
     return '';
   }
-  function polish(text,tone) {
+  function polish(text,tone,messageMode="auto",customMessage="") {
     const cleaned=noticeDraft(text);
     if(!cleaned) return '';
     const fieldGroups = [
@@ -255,14 +255,44 @@
       if (!lines.length) return '';
       return (tone === 'brief' ? [] : ['[' + groupTitles[index] + ']']).concat(lines).join('\n');
     });
-    const close = tone === 'warm' ? '가정에서도 확인해 주시면 감사하겠습니다.' : '확인 부탁드립니다. 감사합니다.';
-    return [title, intro, sentences.filter(Boolean).join('\n'), ...sections, close].filter(Boolean).join('\n\n');
+    const labels = new Set(details.map(field=>field.label));
+    const actions = [
+      [['신청기한','신청방법'], '참여를 희망하시면 위 신청 안내를 확인해 주세요.'],
+      [['제출기한','제출방법'], '위 제출 안내에 따라 제출해 주세요.'],
+      [['회신기한','회신방법'], '위 회신 안내에 따라 답변해 주세요.'],
+      [['변경사항'], '변경된 내용을 확인해 주세요.'],
+      [['등교방법','하교방법'], '자녀와 함께 등하교 방법을 확인해 주세요.'],
+      [['준비물','복장'], '자녀와 함께 복장이나 준비물을 확인해 주세요.']
+    ];
+    const match = actions.find(([fields])=>fields.some(field=>labels.has(field)));
+    let message = '';
+    if (messageMode === 'custom') {
+      message = noticeDraft(customMessage);
+    } else if (messageMode === 'auto') {
+      message = match?.[1] || '안내 내용을 확인해 주세요.';
+      if (match?.[0].includes('준비물')) {
+        const items = labels.has('준비물') && labels.has('복장') ? '복장과 준비물'
+          : labels.has('준비물') ? '준비물' : '복장';
+        message = `자녀와 함께 ${items}을 확인해 주세요.`;
+      }
+      if (match?.[0].includes('등교방법')) {
+        const travel = labels.has('등교방법') && labels.has('하교방법') ? '등하교'
+          : labels.has('등교방법') ? '등교' : '하교';
+        message = `자녀와 함께 ${travel} 방법을 확인해 주세요.`;
+      }
+      if (tone === 'warm') message = message.replace(/해 주세요\.$/, '해 주시면 감사하겠습니다.');
+    }
+    const closing = [message, message.endsWith('감사하겠습니다.') ? '' : '감사합니다.'].filter(Boolean).join(' ');
+    return [title, intro, sentences.filter(Boolean).join('\n'), ...sections, closing].filter(Boolean).join('\n\n');
   }
+  $('#notice-message-mode').addEventListener('change', event=>{
+    $('#notice-message-custom').hidden = event.target.value !== 'custom';
+  });
   $('#polish-button').addEventListener('click',()=>{
     const draft=$('#draft').value;
     if(!draft.trim()){ $('#draft').focus(); $('#draft').setCustomValidity('안내할 내용을 먼저 입력해 주세요.'); $('#draft').reportValidity(); return; }
     $('#draft').setCustomValidity('');
-    const tone=$('input[name="tone"]:checked').value, result=polish(draft,tone);
+    const tone=$('input[name="tone"]:checked').value, result=polish(draft,tone,$('#notice-message-mode').value,$('#notice-message-text').value);
     const warning = dateReview(noticeDraft(draft));
     $('#notice-date-review').textContent = warning;
     $('#notice-date-review').hidden = !warning;
