@@ -27,7 +27,7 @@
     $('#letter-panel').classList.toggle('hidden',button.dataset.tab!=='letter');
   }));
 
-  function sheetPage(items,page,total,layout,answer=false){
+  function sheetPage(items,page,total,layout,answer=false,start=0){
     const title=escapeHTML(current.title||`오늘의 ${C.topicInfo[current.topic][0]}`);
     const subject=C.subjectNames[current.subject],topic=C.topicInfo[current.topic][0];
     return `<article class="worksheet-page${answer?' answer-page':''}" data-font="${layout.font}" data-size="${layout.size}" style="--worksheet-scale:${layout.scale}">
@@ -35,8 +35,8 @@
       <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2>${!answer?'<button type="button" class="sheet-edit-button" data-edit-title>제목 수정</button>':''}<span>${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}</span></div>
       <div class="sheet-meta"><b>이름 <span></span></b><b>날짜 <span></span></b></div>
       <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'그림과 문제를 살펴보고, 문항에 나온 방법대로 풀어 보세요.'}</div>
-      <div class="problem-list">${items.map((problem,index)=>renderProblem(problem,page*layout.perPage+index+1,answer)).join('')}</div>
-      <div class="sheet-footer"><span>한 걸음씩, 나의 속도로</span><span>${page+1} / ${total}</span></div>
+      <div class="problem-list">${items.map((problem,index)=>renderProblem(problem,start+index+1,answer)).join('')}</div>
+      <div class="sheet-footer"><span>${answer?'교사용 정답지':'학생용 학습지'}</span><span>${page+1} / ${total}</span></div>
     </article>`;
   }
   function renderProblem(problem, number, answerSheet){
@@ -65,20 +65,39 @@
     const pixels = Number($('#worksheet-size').value) || 19;
     const size = pixels <= 22 ? 'normal' : 'expanded';
     const layout = {font, size, perPage:pixels <= 22 ? 3 : 2, scale:pixels/19};
-    const {perPage} = layout;
     for (const button of document.querySelectorAll('[data-size-step]')) {
       button.disabled = button.dataset.sizeStep === '-1' ? pixels <= minWorksheetSize : pixels >= maxWorksheetSize;
     }
-    const chunks = [];
-    for (let i=0; i<problems.length; i+=perPage) {
-      chunks.push(problems.slice(i,i+perPage));
-    }
-    const html = chunks.map((items,i)=>sheetPage(items,i,chunks.length,layout)).join('');
+    const printRoot = $('#print-root');
+    const chunks = paginateWorksheet(printRoot, layout);
+    const html = chunks.map(({items,start},i)=>sheetPage(items,i,chunks.length,layout,false,start)).join('');
     $('#worksheet-preview').innerHTML = html;
-    $('#print-root').innerHTML = html + ($('#answer-key').checked
-      ? chunks.map((items,i)=>sheetPage(items,i,chunks.length,layout,true)).join('') : '');
-    $('#preview-status').textContent=`${problems.length}문항 · ${chunks.length}쪽 준비됨`;
+    printRoot.innerHTML = html + ($('#answer-key').checked
+      ? chunks.map(({items,start},i)=>sheetPage(items,i,chunks.length,layout,true,start)).join('') : '');
+    $('#preview-status').textContent=`${problems.length}문항 · 학생용 ${chunks.length}쪽`;
   }
+
+  function paginateWorksheet(root, layout){
+    const pages=[];
+    root.classList.add('measuring-sheet');
+    try {
+      for(let start=0;start<problems.length;){
+        let count=Math.min(layout.perPage,problems.length-start);
+        while(count>1){
+          root.innerHTML=sheetPage(problems.slice(start,start+count),pages.length,9,layout,false,start);
+          const page=root.firstElementChild;
+          if(page.scrollHeight <= page.clientHeight + 1) break;
+          count--;
+        }
+        pages.push({start,items:problems.slice(start,start+count)});
+        start+=count;
+      }
+    } finally {
+      root.classList.remove('measuring-sheet');
+    }
+    return pages;
+  }
+
   function readChoices(problem){
     const match = problem.visual?.match(/^<div class="word-choices">보기:\s*([^<]+)<\/div>$/);
     return match ? match[1].split(/　·　/).map(option=>option.trim()).filter(Boolean) : [];
@@ -328,8 +347,10 @@
       await document.fonts.load('400 19px ' + font, '학습지').catch(()=>{});
     }
     await document.fonts.ready;
+    renderSheet();
     window.print()});
   updateSubjects();
+  document.fonts.addEventListener('loadingdone',()=>{if(!editor.open)renderSheet()});
 
   async function copyText(value){
     try{await navigator.clipboard.writeText(value);return true}
