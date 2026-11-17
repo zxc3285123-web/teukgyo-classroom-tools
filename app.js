@@ -116,6 +116,92 @@
     p.type='choice';p.typeLabel='알맞은 답에 ○ 하기';
     return p;
   }
+  const unitKinds = new Map(Object.values(window.expandBasicCurriculum)
+    .flatMap(Object.values).flat().map(unit=>[unit.id,unit.kind]));
+  const pickItem = items=>items[Math.floor(Math.random()*items.length)];
+  const integer = (min,max)=>min+Math.floor(Math.random()*(max-min+1));
+
+  function generatedProblem(topic,level){
+    const kind = unitKinds.get(topic);
+    const basic = level === 'basic';
+    const challenge = level === 'challenge';
+    const items = ['공책','연필','책','색연필','카드','블록'];
+    const item = pickItem(items);
+    const place = pickItem(['도서관','체육관','운동장','교실','미술실','강당']);
+    const hour = integer(1,6);
+    const minute = basic ? 0 : pickItem([0,15,30,45]);
+    const clock = (h,m)=>`${h}시${m ? ' '+m+'분' : ''}`;
+    const problem = (question,answer,typeLabel,visual='')=>({question,answer:String(answer),typeLabel,visual});
+    const card = (title,lines)=>`<div class="reading-passage"><strong>${escapeHTML(title)}</strong><br>${lines.map(escapeHTML).join('<br>')}</div>`;
+
+    if (['add9','carryAdd','borrowSubtract','tensCalc','hundredsCalc','largeCalc'].includes(kind)) {
+      if (kind === 'borrowSubtract') {
+        const b = integer(4,9), ones = integer(1,b-1);
+        return problem(`카드가 ${10+ones}장 있습니다. ${b}장을 쓰면 몇 장이 남나요?`,10+ones-b+'장','생활 속 계산');
+      }
+      const unit = {tensCalc:10,hundredsCalc:100,largeCalc:1000}[kind] || 1;
+      const a = kind === 'carryAdd' ? integer(5,9) : integer(1,basic?4:7);
+      const b = kind === 'carryAdd' ? integer(10-a,9) : integer(1,Math.min(9-a,basic?4:7));
+      const subtract = unit > 1 && challenge;
+      const sentence = subtract
+        ? `물품이 ${(a+b)*unit}개 있습니다. ${b*unit}개를 나누어 주면 몇 개가 남나요?`
+        : `물품이 ${a*unit}개 있습니다. ${b*unit}개를 더 받으면 모두 몇 개인가요?`;
+      return problem(sentence,(subtract?a:a+b)*unit+'개','생활 속 계산');
+    }
+
+    if (kind === 'multiplication' || kind === 'division') {
+      const groups = integer(2,basic?4:challenge?9:6);
+      const each = integer(2,basic?4:challenge?9:6);
+      return kind === 'multiplication'
+        ? problem(`봉투 ${groups}개에 ${item} ${each}개씩 넣습니다. 모두 몇 개 필요한가요?`, groups*each+'개','묶음 계산')
+        : problem(`${item} ${groups*each}개를 ${groups}명에게 똑같이 나눕니다. 한 사람은 몇 개 받나요?`,each+'개','똑같이 나누기');
+    }
+
+    if (['coins','bills','cardmoney','budget'].includes(kind)) {
+      const unit = kind === 'coins' ? 100 : 1000;
+      const price = integer(2,basic?5:8)*unit;
+      const money = price+integer(1,5)*unit;
+      const won = amount=>amount.toLocaleString('ko-KR')+'원';
+      const visual = card('가격표', [`${item}  ${won(price)}`]);
+      if (kind === 'cardmoney') {
+        return problem(`카드로 ${item} 1개를 사면 얼마를 결제하나요?`,won(price),'가격표 읽기',visual);
+      }
+      return problem(`${won(money)}을 내고 ${item} 1개를 사면 거스름돈은 얼마인가요?`,won(money-price),'거스름돈 계산',visual);
+    }
+
+    if (['clock','schedule','notices','readingPurpose','mediaRead','infoSpeech','memo','timePlaceWords'].includes(kind)) {
+      const time = clock(hour,minute);
+      const setting = card('학교 활동 안내', [`시작: 오후 ${time}`,`장소: ${place}`,`준비물: ${item}`]);
+      if (kind === 'schedule' && challenge) {
+        const duration = pickItem([15,30,45]);
+        const total = hour*60+minute+duration;
+        return problem(`활동이 ${duration}분 동안 진행됩니다. 몇 시 몇 분에 끝나나요?`,`오후 ${clock(Math.floor(total/60),total%60)}`,'끝나는 시각 구하기',setting);
+      }
+      if (kind === 'memo' || kind === 'infoSpeech') {
+        return problem('활동의 시작 시각과 장소를 메모하세요.',`오후 ${time}, ${place}`,'중요한 정보 기록하기',setting);
+      }
+      const [question,answer] = kind === 'clock' || kind === 'schedule' || kind === 'timePlaceWords'
+        ? ['활동은 몇 시에 시작하나요?',`오후 ${time}`]
+        : pickItem([['어디로 가야 하나요?',place],['무엇을 가져가야 하나요?',item],['활동은 몇 시에 시작하나요?',`오후 ${time}`]]);
+      return problem(question,answer,'안내문 읽기',setting);
+    }
+
+    if (kind === 'punctuation') {
+      const [sentence,answer] = pickItem([
+        [`${place}에 언제 가나요`,'?'],[`오늘은 ${place}에 가요`,'.'],
+        [`가방에 ${item}${item==='카드'?'가':'이'} 있나요`,'?'],[`가방에 ${item}${item==='카드'?'를':'을'} 넣어요`,'.']
+      ]);
+      return problem('문장 끝에 알맞은 문장 부호를 쓰세요.',answer,'문장 부호 쓰기',card('문장',[`${sentence}  □`]));
+    }
+
+    if (['lengthCm','lengthM','weightKg','capacityL'].includes(kind)) {
+      const [name,unit] = {lengthCm:['끈','cm'],lengthM:['밧줄','m'],weightKg:['쌀','kg'],capacityL:['물','L']}[kind];
+      const a = integer(2,basic?5:15), b = integer(1,a-1);
+      return problem(`${name} ${a} ${unit} 중 ${b} ${unit}를 사용했습니다. 얼마가 남았나요?`,`${a-b} ${unit}`,'측정값으로 계산');
+    }
+    return null;
+  }
+
   function generate(newSheet=false){
     const topic=$('input[name="topic"]:checked');if(!topic)return;
     const previous=problems.flatMap(p=>p.sourceKeys||[p.key]).filter(Boolean);
@@ -125,14 +211,16 @@
     const base = C.createProblems(current.topic,current.level,current.grade,current.count,avoided);
     base.forEach(problem=>used.add(problem.key));
     problems = base.map((problem, index) => {
-      if (index % 2 === 0) {
+      const maker = index % 3 === 0 && generatedProblem(current.topic,current.level) ? generatedProblem
+        : index % 2 === 0 ? window.pictureProblem : null;
+      if (maker) {
         for (let attempt = 0; attempt < 32; attempt++) {
-          const picture = window.pictureProblem(current.topic, current.level);
-          if (!picture) break;
-          const key = JSON.stringify([picture.question, picture.visual, picture.answer]);
+          const created = maker(current.topic,current.level);
+          if (!created) break;
+          const key = JSON.stringify([created.question,created.visual,created.answer]);
           if (used.has(key)) continue;
           used.add(key);
-          return {...picture, key};
+          return {...created,key};
         }
       }
       return varyProblem(problem, (index + Math.floor(index / 4)) % 4, used);
