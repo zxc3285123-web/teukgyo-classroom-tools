@@ -8,7 +8,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8544439780701521" crossorigin="anonymous"></script>
   <title>다정한 교실 도구함</title>
   <link rel="preload" href="./PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="./style.css?v=font-settings1">
+  <link rel="stylesheet" href="./style.css?v=worksheet-edit1">
 </head>
 <body>
   <div class="app-shell">
@@ -47,11 +47,11 @@
                   <option value="gothic">기기 기본 고딕</option>
                   <option value="serif">기기 기본 명조</option>
                 </select></div>
-                <div class="field"><label for="worksheet-size">글씨 크기</label><select id="worksheet-size">
-                  <option value="normal">기본 (19px)</option>
-                  <option value="large">크게 (23px)</option>
-                  <option value="largest">아주 크게 (27px)</option>
-                </select></div>
+                <div class="field"><label for="worksheet-size">글씨 크기</label><div class="size-stepper">
+                  <button type="button" data-size-step="-1" aria-label="글씨 1픽셀 줄이기">−</button>
+                  <select id="worksheet-size" aria-label="글씨 크기 픽셀"></select>
+                  <button type="button" data-size-step="1" aria-label="글씨 1픽셀 늘리기">+</button>
+                </div></div>
               </div>
             </fieldset>
             <label class="checkline"><input id="answer-key" type="checkbox"><span>정답지 함께 인쇄하기</span></label>
@@ -82,6 +82,16 @@
       <section class="how-to"><span class="section-kicker">HOW TO USE</span><h2>이렇게 사용하세요</h2><div class="how-grid"><div><span>01</span><h3>선택하거나 입력</h3><p>학습지의 학년·과목·단원·수준을 고르거나 안내문 초안을 적습니다.</p></div><div><span>02</span><h3>결과 확인</h3><p>미리보기에서 문제와 문장을 확인하고 필요하면 다시 만듭니다.</p></div><div><span>03</span><h3>바로 활용</h3><p>학습지는 A4로 인쇄하거나 PDF로 저장하고, 안내문은 복사합니다.</p></div></div></section>
     </main><footer><span class="brand"><span class="brand-mark">✳</span><span>다정한 교실 도구함</span></span><p>교실의 작은 준비를 돕는 도구 · 학습지 문제와 디자인은 독자적으로 제작했습니다. <a href="./privacy.html">개인정보·광고 안내</a></p></footer>
   </div>
+  <dialog id="problem-editor" class="problem-editor" aria-labelledby="problem-editor-title">
+    <form id="problem-edit-form">
+      <h2 id="problem-editor-title">문항 수정</h2>
+      <div id="problem-edit-fields"></div>
+      <div class="problem-edit-actions">
+        <button type="button" id="problem-edit-cancel" class="outline-button">취소</button>
+        <button type="submit" class="primary-button">수정 적용</button>
+      </div>
+    </form>
+  </dialog>
   <div id="print-root" aria-hidden="true"></div>
   <script src="./question-data.js?v=20261114c" defer></script>
   <script src="./question-data-more.js?v=20261114c" defer></script>
@@ -91,6 +101,6 @@
   <script src="./full-unit-korean.js?v=20261114d" defer></script>
   <script src="./full-unit-init.js?v=20261114d" defer></script>
   <script src="./picture-problems.js?v=layout2" defer></script>
-  <script src="./app.js?v=notice-message5" defer></script>
+  <script src="./app.js?v=worksheet-edit1" defer></script>
 </body>
 </html>
