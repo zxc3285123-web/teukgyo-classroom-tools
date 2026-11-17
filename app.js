@@ -3,6 +3,8 @@
   const C = window.basicCurriculum2022;
   const escapeHTML = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let current={},problems=[];
+  const minWorksheetSize = 14, maxWorksheetSize = 32;
+  let editingIndex = -1;
   const historyKey='teukgyo-offline-question-history-v1';
   let questionHistory={};
   try{questionHistory=JSON.parse(localStorage.getItem(historyKey)||'{}')||{}}catch{questionHistory={}}
@@ -28,9 +30,9 @@
   function sheetPage(items,page,total,layout,answer=false){
     const title=escapeHTML(current.title||`오늘의 ${C.topicInfo[current.topic][0]}`);
     const subject=C.subjectNames[current.subject],topic=C.topicInfo[current.topic][0];
-    return `<article class="worksheet-page${answer?' answer-page':''}" data-font="${layout.font}" data-size="${layout.size}">
+    return `<article class="worksheet-page${answer?' answer-page':''}" data-font="${layout.font}" data-size="${layout.size}" style="--worksheet-scale:${layout.scale}">
       <div class="sheet-overline">2022 특수교육 기본 교육과정 · ${escapeHTML(C.bandName(current.grade))}</div>
-      <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2><span>${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}</span></div>
+      <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2>${!answer?'<button type="button" class="sheet-edit-button" data-edit-title>제목 수정</button>':''}<span>${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}</span></div>
       <div class="sheet-meta"><b>이름 <span></span></b><b>날짜 <span></span></b></div>
       <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'그림과 문제를 살펴보고, 문항에 나온 방법대로 풀어 보세요.'}</div>
       <div class="problem-list">${items.map((problem,index)=>renderProblem(problem,page*layout.perPage+index+1,answer)).join('')}</div>
@@ -44,13 +46,14 @@
     }
     if (problem.type === 'match' || problem.responseInVisual) response = '';
     if (answerSheet) response = `<div class="answer-value">정답: ${escapeHTML(problem.answer)}</div>`;
-    const choices = problem.type === 'choice' ? readChoices(problem) : [];
+    const choices = problem.choices || (problem.type === 'choice' ? readChoices(problem) : []);
     const content = choices.length ? `<ol class="worksheet-options">${choices.map((choice,i)=>`<li><span class="option-number">${i+1}</span><span>${escapeHTML(choice)}</span></li>`).join('')}</ol>` : problem.visual;
     if (!answerSheet && choices.length) response = '';
     const visual = !answerSheet && content
       ? `<div class="problem-visual">${content}</div>` : '';
     return `<section class="problem">
       <div class="problem-top"><span class="problem-num">${number}</span>
+        ${!answerSheet?`<button type="button" class="sheet-edit-button" data-edit-problem="${number-1}" aria-label="${number}번 문항 수정">수정</button>`:''}
         <div><span class="problem-type">${escapeHTML(problem.typeLabel || '풀기')}</span>
         <div class="problem-question">${escapeHTML(problem.question)}${problem.candidate ? `<span class="problem-candidate">제시된 답: ${escapeHTML(problem.candidate)}</span>` : ''}</div></div>
       </div>${visual}${response}
@@ -59,9 +62,13 @@
 
   function renderSheet(){
     const font = $('#worksheet-font').value;
-    const size = $('#worksheet-size').value;
-    const perPage = size === 'normal' ? 3 : 2;
-    const layout = {font, size, perPage};
+    const pixels = Number($('#worksheet-size').value) || 19;
+    const size = pixels <= 22 ? 'normal' : 'expanded';
+    const layout = {font, size, perPage:pixels <= 22 ? 3 : 2, scale:pixels/19};
+    const {perPage} = layout;
+    for (const button of document.querySelectorAll('[data-size-step]')) {
+      button.disabled = button.dataset.sizeStep === '-1' ? pixels <= minWorksheetSize : pixels >= maxWorksheetSize;
+    }
     const chunks = [];
     for (let i=0; i<problems.length; i+=perPage) {
       chunks.push(problems.slice(i,i+perPage));
@@ -152,11 +159,72 @@
   $('#count').addEventListener('change',()=>generate());
   $('#paper-title').addEventListener('input',()=>{if(current.topic){current.title=$('#paper-title').value.trim();renderSheet()}});
   $('#worksheet-form').addEventListener('submit',e=>{e.preventDefault();generate(true)});
+  const sizeControl = $('#worksheet-size');
+  for (let size = minWorksheetSize; size <= maxWorksheetSize; size++) {
+    sizeControl.add(new Option(size + ' px', size, size === 19, size === 19));
+  }
+  document.querySelectorAll('[data-size-step]').forEach(button=>button.addEventListener('click',()=>{
+    sizeControl.value = String(Number(sizeControl.value) + Number(button.dataset.sizeStep));
+    sizeControl.dispatchEvent(new Event('change'));
+  }));
+  const editor = $('#problem-editor');
+  $('#worksheet-preview').addEventListener('click', event=>{
+    const titleButton = event.target.closest('[data-edit-title]');
+    if (titleButton) {
+      editingIndex = -1;
+      $('#problem-editor-title').textContent = '학습지 제목 수정';
+      $('#problem-edit-fields').innerHTML = editorField('title','제목',current.title || `오늘의 ${C.topicInfo[current.topic][0]}`,35);
+      editor.showModal();
+      return;
+    }
+    const button = event.target.closest('[data-edit-problem]');
+    if (!button) return;
+    editingIndex = Number(button.dataset.editProblem);
+    const problem = problems[editingIndex];
+    const choices = problem.choices || (problem.type === 'choice' ? readChoices(problem) : []);
+    $('#problem-editor-title').textContent = (editingIndex + 1) + '번 문항 수정';
+    $('#problem-edit-fields').innerHTML = editorField('question','문제 문장',problem.question,180,true)
+      + (problem.candidate ? editorField('candidate','제시된 답',problem.candidate,100) : '')
+      + choices.map((choice,i)=>editorField('choice','보기 ' + (i+1),choice,100)).join('')
+      + editorField('answer','정답지에 표시할 답',problem.answer,120);
+    editor.showModal();
+  });
+  function editorField(name,label,value,maxLength,multiline=false){
+    const field = multiline
+      ? `<textarea name="${name}" rows="3" maxlength="${maxLength}" required>${escapeHTML(value)}</textarea>`
+      : `<input name="${name}" value="${escapeHTML(value)}" maxlength="${maxLength}" required>`;
+    return `<label class="editor-field">${label}${field}</label>`;
+  }
+  $('#problem-edit-cancel').addEventListener('click',()=>editor.close());
+  $('#problem-edit-form').addEventListener('submit',event=>{
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    if (editingIndex === -1) {
+      current.title = data.get('title').trim();
+      $('#paper-title').value = current.title;
+    } else {
+      const problem = problems[editingIndex];
+      const question = data.get('question').trim();
+      const answer = data.get('answer').trim();
+      const choices = data.getAll('choice').map(value=>value.trim());
+      const candidate = data.get('candidate')?.trim();
+      if (!question || !answer || choices.some(choice=>!choice) || candidate === '') return;
+      problem.question = question;
+      problem.answer = answer;
+      if (choices.length) problem.choices = choices;
+      if (candidate) problem.candidate = candidate;
+    }
+    editor.close();
+    renderSheet();
+    const selector = editingIndex === -1 ? '[data-edit-title]' : `[data-edit-problem="${editingIndex}"]`;
+    $('#worksheet-preview ' + selector)?.focus({preventScroll:true});
+  });
   for (const selector of ['#worksheet-font', '#worksheet-size']) {
     const control = $(selector);
     const key = 'teukgyo:' + control.id;
     try {
-      const saved = localStorage.getItem(key);
+      const stored = localStorage.getItem(key);
+      const saved = selector === '#worksheet-size' ? ({normal:'19',large:'23',largest:'27'}[stored] || stored) : stored;
       if (Array.from(control.options).some(option=>option.value===saved)) control.value=saved;
     } catch {}
     control.addEventListener('change',()=>{
