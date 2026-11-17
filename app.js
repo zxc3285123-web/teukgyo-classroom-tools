@@ -64,7 +64,7 @@
     const font = $('#worksheet-font').value;
     const pixels = Number($('#worksheet-size').value) || 19;
     const size = pixels <= 22 ? 'normal' : 'expanded';
-    const layout = {font, size, perPage:pixels <= 22 ? 3 : 2, scale:pixels/19};
+    const layout = {font, size, scale:pixels/19};
     for (const button of document.querySelectorAll('[data-size-step]')) {
       button.disabled = button.dataset.sizeStep === '-1' ? pixels <= minWorksheetSize : pixels >= maxWorksheetSize;
     }
@@ -74,7 +74,7 @@
     $('#worksheet-preview').innerHTML = html;
     printRoot.innerHTML = html + ($('#answer-key').checked
       ? chunks.map(({items,start},i)=>sheetPage(items,i,chunks.length,layout,true,start)).join('') : '');
-    $('#preview-status').textContent=`${problems.length}문항 · 학생용 ${chunks.length}쪽`;
+    $('#preview-status').textContent=`${problems.length}문항 · 학생용 ${chunks.length}쪽${$('#answer-key').checked ? ' + 정답지 ' + chunks.length + '쪽' : ''}`;
   }
 
   function paginateWorksheet(root, layout){
@@ -82,11 +82,11 @@
     root.classList.add('measuring-sheet');
     try {
       for(let start=0;start<problems.length;){
-        let count=Math.min(layout.perPage,problems.length-start);
+        let count=problems.length-start;
         while(count>1){
           root.innerHTML=sheetPage(problems.slice(start,start+count),pages.length,9,layout,false,start);
           const page=root.firstElementChild;
-          if(page.scrollHeight <= page.clientHeight + 1) break;
+          if(page.clientHeight > 0 && page.scrollHeight <= page.clientHeight) break;
           count--;
         }
         pages.push({start,items:problems.slice(start,start+count)});
@@ -248,20 +248,20 @@
     renderSheet();
     if(newSheet)rememberQuestions();
   }
-  function updateTopics(){
-    const grade=$('#grade').value,subject=$('#subject').value,topics=C.catalog[C.band(grade)][subject],old=$('input[name="topic"]:checked')?.value;
+  function updateTopics(preferredTopic){
+    const grade=$('#grade').value,subject=$('#subject').value,topics=C.catalog[C.band(grade)][subject],old=preferredTopic ?? $('input[name="topic"]:checked')?.value;
     let lastArea='';
     $('#topic-options').innerHTML=topics.map((key,i)=>{const [name,icon,description]=C.topicInfo[key],area=C.unitArea?.(key)||'';let heading=area!==lastArea?`<div class="unit-group-title">${escapeHTML(area)}</div>`:'';lastArea=area;return `${heading}<label class="choice"><input type="radio" name="topic" value="${key}" ${old===key||(!topics.includes(old)&&i===0)?'checked':''}><span class="choice-icon">${icon}</span><strong>${escapeHTML(name)}</strong><small>${escapeHTML(description)}</small></label>`}).join('');
     generate();
   }
-  function updateSubjects(){
-    const grade=$('#grade').value,choices=C.catalog[C.band(grade)],old=$('#subject').value;
+  function updateSubjects(preferences = {}){
+    const grade=$('#grade').value,choices=C.catalog[C.band(grade)],old=preferences.subject ?? $('#subject').value;
     $('#subject').innerHTML=Object.keys(choices).map(key=>`<option value="${key}">${C.subjectNames[key]}</option>`).join('');
     if(choices[old])$('#subject').value=old;
-    updateTopics();
+    updateTopics(preferences.topic);
   }
   $('#grade').addEventListener('change',updateSubjects);
-  $('#subject').addEventListener('change',updateTopics);
+  $('#subject').addEventListener('change',()=>updateTopics());
   $('#topic-options').addEventListener('change',()=>generate());
   document.querySelectorAll('input[name="level"]').forEach(el=>el.addEventListener('change',()=>generate()));
   $('#count').addEventListener('change',()=>generate());
@@ -349,7 +349,25 @@
     await document.fonts.ready;
     renderSheet();
     window.print()});
-  updateSubjects();
+  const settingsKey = 'teukgyo:worksheet-settings';
+  let savedSettings = {};
+  try { savedSettings = JSON.parse(localStorage.getItem(settingsKey)) || {}; } catch {}
+  for (const field of ['grade','count']) {
+    const control = $('#' + field);
+    if (Array.from(control.options).some(option => option.value === savedSettings[field])) {
+      control.value = savedSettings[field];
+    }
+  }
+  for (const radio of document.querySelectorAll('input[name="level"]')) {
+    if (radio.value === savedSettings.level) radio.checked = true;
+  }
+  $('#answer-key').checked = savedSettings.answerKey === true;
+  updateSubjects(savedSettings);
+  $('#worksheet-form').addEventListener('change', () => {
+    const {grade, subject, topic, level} = current;
+    const settings = {grade, subject, topic, level, count: $('#count').value, answerKey: $('#answer-key').checked};
+    try { localStorage.setItem(settingsKey, JSON.stringify(settings)); } catch {}
+  });
   document.fonts.addEventListener('loadingdone',()=>{if(!editor.open)renderSheet()});
 
   async function copyText(value){
@@ -471,14 +489,21 @@
     if(!draft.trim()){ $('#draft').focus(); $('#draft').setCustomValidity('안내할 내용을 먼저 입력해 주세요.'); $('#draft').reportValidity(); return; }
     $('#draft').setCustomValidity('');
     const tone=$('input[name="tone"]:checked').value, result=polish(draft,tone,$('#notice-message-mode').value,$('#notice-message-text').value);
-    const warning = dateReview(noticeDraft(draft));
+    $('#result').value=result;
+    $('#result').readOnly=false;
+    updateNoticeResult();
+  });
+  function updateNoticeResult(){
+    const warning = dateReview($('#result').value);
     $('#notice-date-review').textContent = warning;
     $('#notice-date-review').hidden = !warning;
-    $('#result').textContent=result; $('#result').classList.remove('empty'); $('#copy-button').disabled=false; $('#copy-button').textContent='복사하기';
-  });
+    $('#copy-button').disabled=!$('#result').value.trim();
+    $('#copy-button').textContent='복사하기';
+  }
+  $('#result').addEventListener('input',updateNoticeResult);
   $('#draft').addEventListener('input',()=>$('#draft').setCustomValidity(''));
   $('#copy-button').addEventListener('click',async()=>{
-    const value=$('#result').textContent;
+    const value=$('#result').value;
     const copied=await copyText(value);
     $('#copy-button').textContent=copied?'복사했어요 ✓':'복사할 수 없어요';setTimeout(()=>$('#copy-button').textContent='복사하기',2200);
   });
