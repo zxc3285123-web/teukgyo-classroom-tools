@@ -211,31 +211,52 @@
   function polish(text,tone) {
     const cleaned=noticeDraft(text);
     if(!cleaned) return '';
-    const fieldPattern = /^(등교\s*방법|하교\s*방법|집합\s*장소|집합\s*시간|출발\s*시간|제출\s*기한|행사\s*일시|행사\s*장소|일시|날짜|시간|장소|복장|준비물|대상|일정|문의|참가비|신청\s*방법)(?:\s*[:：]\s*|\s+)(.+)$/;
+    const fieldGroups = [
+      ['일시','날짜','시간','기간','대상','장소','집합시간','집합장소','출발시간','일정','내용'],
+      ['등교방법','하교방법','복장','준비물','급식','참가비','변경사항','유의사항'],
+      ['신청기한','신청방법','제출기한','제출방법','회신기한','회신방법','문의']
+    ];
+    const aliases = {'행사일시':'일시','행사장소':'장소','신청마감':'신청기한','제출마감':'제출기한','회신마감':'회신기한','참여대상':'대상'};
+    const fieldNames = [...fieldGroups.flat(), ...Object.keys(aliases)].sort((a,b)=>b.length-a.length);
+    const fieldPattern = new RegExp('^(' + fieldNames.map(label=>[...label].join('\\s*')).join('|') + ')(?:\\s*[:：]\\s*|\\s+)(.+)$');
     const details = [];
     const sentences = [];
+    let title = '';
     for (const raw of cleaned.split(/\n+/)) {
       const line = raw.trim().replace(/^(?:[-•–]|\d+[.)])\s+/, '');
       if (!line) continue;
       const field = line.match(fieldPattern);
       if (field) {
         const label = field[1].replace(/\s+/g, '');
-        details.push(`${label}: ${field[2].trim()}`);
+        details.push({label:aliases[label] || label, value:field[2].trim()});
         continue;
       }
       const scheduled = line.match(/^((?:다음\s*주|이번\s*주)\s*)?((?:\d{4}년\s*)?\d{1,2}월\s*\d{1,2}일(?:\s*\(?[일월화수목금토]요일\)?)?\s*)?(.+?)\s+(?:개최\s*|진행\s*)?예정[.。]?$/);
       if (scheduled) {
         const week = (scheduled[1] || '').trim().replace(/^(다음|이번)\s*주$/, '$1 주');
         const date = (scheduled[2] || '').trim();
-        sentences.push(`${scheduled[3]} 일정을 안내드립니다.`);
-        if (week || date) details.push('일시: ' + [week,date].filter(Boolean).join(' '));
+        const event = scheduled[3];
+        if (!title) title = event + ' 안내';
+        else sentences.push(event + ' 일정을 안내드립니다.');
+        if (week || date) details.push({label:'일시', value:[week,date].filter(Boolean).join(' ')});
+      } else if (!title && /^[가-힣0-9 ·()]{2,36} (?:안내|일정 변경|신청|참석 요청)$/.test(line)) {
+        title = line;
       } else {
         sentences.push(normalizeSentence(line,tone));
       }
     }
-    const intro=tone==='warm'?'안녕하세요, 학부모님. 늘 학교 활동에 관심을 가져 주셔서 감사합니다.':tone==='brief'?'안녕하세요, 학부모님.':'안녕하세요, 학부모님. 아래 내용을 안내드립니다.';
-    const close=tone==='warm'?'가정에서도 내용을 확인해 주시면 감사하겠습니다. 궁금하신 점은 학교로 문의해 주세요.':tone==='brief'?'확인 부탁드립니다. 감사합니다.':'내용을 확인해 주시고, 궁금하신 점은 학교로 문의해 주시기 바랍니다. 감사합니다.';
-    return [intro, sentences.join(tone==='brief'?'\n':' '), details.join('\n'), close].filter(Boolean).join('\n\n');
+    const intro = tone === 'warm'
+      ? '안녕하세요, 학부모님. 늘 학교 활동에 관심을 가져 주셔서 감사합니다.'
+      : '안녕하세요, 학부모님.';
+    const groupTitles = ['일정 및 장소', '참여 안내', '신청·제출 및 문의'];
+    const sections = fieldGroups.map((group, index) => {
+      const lines = group.flatMap(label=>details.filter(field=>field.label===label)
+        .map(field=>`${field.label}: ${field.value}`));
+      if (!lines.length) return '';
+      return (tone === 'brief' ? [] : ['[' + groupTitles[index] + ']']).concat(lines).join('\n');
+    });
+    const close = tone === 'warm' ? '가정에서도 확인해 주시면 감사하겠습니다.' : '확인 부탁드립니다. 감사합니다.';
+    return [title, intro, sentences.filter(Boolean).join('\n'), ...sections, close].filter(Boolean).join('\n\n');
   }
   $('#polish-button').addEventListener('click',()=>{
     const draft=$('#draft').value;
