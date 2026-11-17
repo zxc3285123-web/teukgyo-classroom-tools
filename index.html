@@ -63,7 +63,20 @@
 
       <section class="tool-section hidden" id="letter-panel">
         <div class="section-intro"><div><span class="section-kicker">02 · MESSAGE POLISHER</span><h2>전하고 싶은 말을, 더 정돈된 문장으로</h2><p>짧게 적은 내용을 학부모님께 보내기 좋은 안내문 형식으로 다듬습니다.</p></div><span class="section-decoration" aria-hidden="true">✉</span></div>
-        <div class="letter-grid"><div class="control-card"><div class="card-heading"><span class="circle-number">1</span><h3>초안 입력</h3></div><label for="draft" class="input-label">전할 내용</label><textarea id="draft" rows="10" placeholder="예: 다음 주 학교 체육대회 예정&#10;복장 체육복&#10;장소 예술공원&#10;등교방법 자율 등교"></textarea><div class="privacy-note"><strong>🔒 개인정보를 줄여 주세요</strong><p>학생 실명, 진단명, 연락처, 주민등록번호 등은 입력하지 마세요. 필요하다면 ‘학생’, ‘보호자’처럼 바꿔 적어 주세요. 입력 내용은 서버로 전송하거나 저장하지 않습니다.</p></div><fieldset><legend>문장 분위기</legend><div class="segmented tone-select"><label><input type="radio" name="tone" value="formal" checked><span>정중하게</span></label><label><input type="radio" name="tone" value="warm"><span>따뜻하게</span></label><label><input type="radio" name="tone" value="brief"><span>간결하게</span></label></div></fieldset><button class="primary-button" id="polish-button" type="button">안내문 다듬기 <span>↗</span></button></div><div class="result-card"><div class="preview-heading"><div><span class="circle-number soft">2</span><h3>다듬은 안내문</h3></div><button id="copy-button" class="outline-button" type="button" disabled>복사하기</button></div><div id="result" class="result-content empty"><span class="result-illustration">✉</span><p>초안을 입력하고 버튼을 누르면<br>이곳에 안내문이 나타납니다.</p></div><p id="notice-date-review" class="review-note" role="status" hidden></p><p class="review-note">보내기 전에 날짜·장소·준비물과 학생별 상황을 꼭 확인해 주세요. 이 도구는 입력한 사실만 사용해 문장을 정리합니다.</p></div></div>
+        <div class="letter-grid"><div class="control-card"><div class="card-heading"><span class="circle-number">1</span><h3>초안 입력</h3></div><label for="draft" class="input-label">전할 내용</label><textarea id="draft" rows="10" placeholder="예: 다음 주 학교 체육대회 예정&#10;복장 체육복&#10;장소 예술공원&#10;등교방법 자율 등교"></textarea><div class="privacy-note"><strong>🔒 개인정보를 줄여 주세요</strong><p>학생 실명, 진단명, 연락처, 주민등록번호 등은 입력하지 마세요. 필요하다면 ‘학생’, ‘보호자’처럼 바꿔 적어 주세요. 입력 내용은 서버로 전송하거나 저장하지 않습니다.</p></div><fieldset><legend>문장 분위기</legend><div class="segmented tone-select"><label><input type="radio" name="tone" value="formal" checked><span>정중하게</span></label><label><input type="radio" name="tone" value="warm"><span>따뜻하게</span></label><label><input type="radio" name="tone" value="brief"><span>간결하게</span></label></div></fieldset><fieldset class="notice-message-settings">
+  <legend>학부모님께 전할 멘트</legend>
+  <div class="field"><label for="notice-message-mode">마무리 방식</label>
+    <select id="notice-message-mode">
+      <option value="auto">초안 내용에 맞춰 추천</option>
+      <option value="custom">직접 입력</option>
+      <option value="none">멘트 없이 마무리</option>
+    </select>
+  </div>
+  <div id="notice-message-custom" class="field" hidden>
+    <label for="notice-message-text">추가할 문장</label>
+    <textarea id="notice-message-text" rows="2" maxlength="300" placeholder="예: 자녀와 함께 준비물을 확인해 주시면 감사하겠습니다."></textarea>
+  </div>
+</fieldset><button class="primary-button" id="polish-button" type="button">안내문 다듬기 <span>↗</span></button></div><div class="result-card"><div class="preview-heading"><div><span class="circle-number soft">2</span><h3>다듬은 안내문</h3></div><button id="copy-button" class="outline-button" type="button" disabled>복사하기</button></div><div id="result" class="result-content empty"><span class="result-illustration">✉</span><p>초안을 입력하고 버튼을 누르면<br>이곳에 안내문이 나타납니다.</p></div><p id="notice-date-review" class="review-note" role="status" hidden></p><p class="review-note">보내기 전에 날짜·장소·준비물과 학생별 상황을 꼭 확인해 주세요. 이 도구는 입력한 사실만 사용해 문장을 정리합니다.</p></div></div>
       </section>
 
       <section class="how-to"><span class="section-kicker">HOW TO USE</span><h2>이렇게 사용하세요</h2><div class="how-grid"><div><span>01</span><h3>선택하거나 입력</h3><p>학습지의 학년·과목·단원·수준을 고르거나 안내문 초안을 적습니다.</p></div><div><span>02</span><h3>결과 확인</h3><p>미리보기에서 문제와 문장을 확인하고 필요하면 다시 만듭니다.</p></div><div><span>03</span><h3>바로 활용</h3><p>학습지는 A4로 인쇄하거나 PDF로 저장하고, 안내문은 복사합니다.</p></div></div></section>
@@ -78,6 +91,6 @@
   <script src="./full-unit-korean.js?v=20261114d" defer></script>
   <script src="./full-unit-init.js?v=20261114d" defer></script>
   <script src="./picture-problems.js?v=layout2" defer></script>
-  <script src="./app.js?v=notice-school4" defer></script>
+  <script src="./app.js?v=notice-message5" defer></script>
 </body>
 </html>
