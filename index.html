@@ -8,7 +8,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8544439780701521" crossorigin="anonymous"></script>
   <title>다정한 교실 도구함</title>
   <link rel="preload" href="./PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="./style.css?v=type1">
+  <link rel="stylesheet" href="./style.css?v=font-settings1">
 </head>
 <body>
   <div class="app-shell">
@@ -39,6 +39,21 @@
             <fieldset><legend>학습 단원 <span class="optional">학년군·과목에 맞게 표시됩니다</span></legend><div class="choice-grid topic-grid" id="topic-options"></div></fieldset>
             <fieldset><legend>학생 수준 <span class="optional">학년과 관계없이 조절할 수 있어요</span></legend><div class="segmented"><label><input type="radio" name="level" value="basic" checked><span>기초<small>힌트와 쉬운 수</small></span></label><label><input type="radio" name="level" value="practice"><span>연습<small>혼자 풀기</small></span></label><label><input type="radio" name="level" value="challenge"><span>도전<small>응용하기</small></span></label></div></fieldset>
             <div class="field-row"><div class="field"><label for="count">문항 수</label><select id="count"><option selected>4</option><option>6</option><option>8</option><option>10</option><option>12</option></select></div><div class="field"><label for="paper-title">학습지 제목 <span class="optional">선택</span></label><input id="paper-title" type="text" maxlength="35" placeholder="예: 오늘의 수학"></div></div>
+            <fieldset class="worksheet-type-settings">
+              <legend>학습지 글씨</legend>
+              <div class="field-row">
+                <div class="field"><label for="worksheet-font">글꼴</label><select id="worksheet-font">
+                  <option value="pretendard">프리텐다드</option>
+                  <option value="gothic">기기 기본 고딕</option>
+                  <option value="serif">기기 기본 명조</option>
+                </select></div>
+                <div class="field"><label for="worksheet-size">글씨 크기</label><select id="worksheet-size">
+                  <option value="normal">기본 (19px)</option>
+                  <option value="large">크게 (23px)</option>
+                  <option value="largest">아주 크게 (27px)</option>
+                </select></div>
+              </div>
+            </fieldset>
             <label class="checkline"><input id="answer-key" type="checkbox"><span>정답지 함께 인쇄하기</span></label>
             <button class="primary-button" type="submit">새 학습지 만들기 <span>↗</span></button><p class="control-hint">같은 브라우저에서 사용한 문항을 우선 피해서 조합합니다. 문항과 정답을 학생의 개별화교육 목표에 맞게 확인해 주세요.</p>
           </form>
@@ -63,6 +78,6 @@
   <script src="./full-unit-korean.js?v=20261114d" defer></script>
   <script src="./full-unit-init.js?v=20261114d" defer></script>
   <script src="./picture-problems.js?v=layout2" defer></script>
-  <script src="./app.js?v=type1" defer></script>
+  <script src="./app.js?v=font-settings1" defer></script>
 </body>
 </html>
