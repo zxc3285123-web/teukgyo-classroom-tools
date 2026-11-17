@@ -165,7 +165,13 @@
     });
   }
   $('#answer-key').addEventListener('change',renderSheet);
-  $('#print-button').addEventListener('click',async ()=>{rememberQuestions();await document.fonts.ready;window.print()});
+  $('#print-button').addEventListener('click',async ()=>{rememberQuestions();const page = $('#worksheet-preview .worksheet-page');
+    if (page) {
+      const font = getComputedStyle(page).fontFamily;
+      await document.fonts.load('400 19px ' + font, '학습지').catch(()=>{});
+    }
+    await document.fonts.ready;
+    window.print()});
   updateSubjects();
 
   async function copyText(value){
@@ -173,13 +179,6 @@
     catch{
       const ta=document.createElement('textarea');ta.value=value;document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');ta.remove();return ok;
     }
-  }
-  function copyPrompt(value){
-    const field=document.createElement('textarea'),previous=document.activeElement;
-    field.value=value;field.style.position='fixed';field.style.left='-9999px';document.body.appendChild(field);field.focus();field.select();
-    const copied=document.execCommand('copy');field.remove();previous?.focus?.();
-    if(!copied&&navigator.clipboard?.writeText)navigator.clipboard.writeText(value).catch(()=>{});
-    return copied;
   }
   function normalizeSentence(raw,tone) {
     let s=raw.trim().replace(/\s+/g,' ').replace(/^[•\-–]\s*/,'').replace(/[.!?。]+$/,'');
@@ -191,40 +190,67 @@
     if(!/[.?!]$/.test(s)) s+='.';
     return s;
   }
+  function noticeDraft(text){
+    const cleaned = text.trim().replace(/\r/g,'');
+    const marker = cleaned.match(/(?:^|\n)\s*초안\s*[:：]\s*/);
+    const draft = marker ? cleaned.slice(marker.index + marker[0].length) : cleaned;
+    return draft.replace(/(^|\n)(\s*(?:학생\s*(?:이름|성명|실명)|보호자\s*(?:이름|성명))(?:\s*[:：]\s*|\s+))[^\n]+/g,(_, start, label)=>start + label + (label.includes('보호자') ? '보호자' : '학생'))
+      .replace(/(?<!\d)01[016789][ -]?\d{3,4}[ -]?\d{4}(?!\d)/g,'[연락처 비공개]')
+      .replace(/(?<!\d)\d{6}-[1-8]\d{6}(?!\d)/g,'[개인정보 비공개]');
+  }
+  function dateReview(draft, year = new Date().getFullYear()){
+    const weekdays = ['일','월','화','수','목','금','토'];
+    for (const [, explicitYear, month, day, weekday] of draft.matchAll(/(?:(\d{4})년\s*)?(\d{1,2})월\s*(\d{1,2})일\s*\(?([일월화수목금토])요일\)?/g)) {
+      const date = new Date(Number(explicitYear || year), Number(month)-1, Number(day));
+      if (date.getMonth() !== Number(month)-1 || date.getDate() !== Number(day) || weekdays[date.getDay()] !== weekday) {
+        return `${explicitYear || year}년 기준으로 입력한 날짜와 요일이 일치하지 않습니다. 발송 전에 확인해 주세요.`;
+      }
+    }
+    return '';
+  }
   function polish(text,tone) {
-    const cleaned=text.trim().replace(/\r/g,'');
+    const cleaned=noticeDraft(text);
     if(!cleaned) return '';
-    const sentences=cleaned.split(/\n+|(?<=[.!?])\s+/).map(s=>normalizeSentence(s,tone)).filter(Boolean);
+    const fieldPattern = /^(등교\s*방법|하교\s*방법|집합\s*장소|집합\s*시간|출발\s*시간|제출\s*기한|행사\s*일시|행사\s*장소|일시|날짜|시간|장소|복장|준비물|대상|일정|문의|참가비|신청\s*방법)(?:\s*[:：]\s*|\s+)(.+)$/;
+    const details = [];
+    const sentences = [];
+    for (const raw of cleaned.split(/\n+/)) {
+      const line = raw.trim().replace(/^(?:[-•–]|\d+[.)])\s+/, '');
+      if (!line) continue;
+      const field = line.match(fieldPattern);
+      if (field) {
+        const label = field[1].replace(/\s+/g, '');
+        details.push(`${label}: ${field[2].trim()}`);
+        continue;
+      }
+      const scheduled = line.match(/^((?:다음\s*주|이번\s*주)\s*)?((?:\d{4}년\s*)?\d{1,2}월\s*\d{1,2}일(?:\s*\(?[일월화수목금토]요일\)?)?\s*)?(.+?)\s+(?:개최\s*|진행\s*)?예정[.。]?$/);
+      if (scheduled) {
+        const week = (scheduled[1] || '').trim().replace(/^(다음|이번)\s*주$/, '$1 주');
+        const date = (scheduled[2] || '').trim();
+        sentences.push(`${scheduled[3]} 일정을 안내드립니다.`);
+        if (week || date) details.push('일시: ' + [week,date].filter(Boolean).join(' '));
+      } else {
+        sentences.push(normalizeSentence(line,tone));
+      }
+    }
     const intro=tone==='warm'?'안녕하세요, 학부모님. 늘 학교 활동에 관심을 가져 주셔서 감사합니다.':tone==='brief'?'안녕하세요, 학부모님.':'안녕하세요, 학부모님. 아래 내용을 안내드립니다.';
     const close=tone==='warm'?'가정에서도 내용을 확인해 주시면 감사하겠습니다. 궁금하신 점은 학교로 문의해 주세요.':tone==='brief'?'확인 부탁드립니다. 감사합니다.':'내용을 확인해 주시고, 궁금하신 점은 학교로 문의해 주시기 바랍니다. 감사합니다.';
-    return `${intro}\n\n${sentences.join(tone==='brief'?'\n':' ')}\n\n${close}`;
+    return [intro, sentences.join(tone==='brief'?'\n':' '), details.join('\n'), close].filter(Boolean).join('\n\n');
   }
   $('#polish-button').addEventListener('click',()=>{
     const draft=$('#draft').value;
     if(!draft.trim()){ $('#draft').focus(); $('#draft').setCustomValidity('안내할 내용을 먼저 입력해 주세요.'); $('#draft').reportValidity(); return; }
     $('#draft').setCustomValidity('');
     const tone=$('input[name="tone"]:checked').value, result=polish(draft,tone);
+    const warning = dateReview(noticeDraft(draft));
+    $('#notice-date-review').textContent = warning;
+    $('#notice-date-review').hidden = !warning;
     $('#result').textContent=result; $('#result').classList.remove('empty'); $('#copy-button').disabled=false; $('#copy-button').textContent='복사하기';
   });
   $('#draft').addEventListener('input',()=>$('#draft').setCustomValidity(''));
-  $('#open-letter-chatgpt').addEventListener('click',event=>{
-    const draft=$('#draft').value.trim();
-    if(!draft){event.preventDefault();$('#ai-letter-status').textContent='초안을 먼저 입력해 주세요.';$('#draft').focus();return}
-    const tone={formal:'정중하고 전문적인',warm:'따뜻하고 공손한',brief:'간결하고 공손한'}[$('input[name="tone"]:checked').value];
-    const prompt=`다음 학부모 안내문 초안을 ${tone} 한국어로 다듬어 주세요. 원문에 없는 날짜·장소·준비물·약속은 만들지 마세요. 학생 개인정보가 있으면 익명 표현으로 바꾸고, 결과 안내문만 출력해 주세요.\n\n초안:\n${draft}`;
-    $('#letter-prompt-preview').value=prompt;$('#letter-import-area').classList.remove('hidden');
-    const copied=copyPrompt(prompt);
-    $('#ai-letter-status').textContent=copied?'ChatGPT가 열립니다. 붙여 넣기가 안 되면 요청 문구 직접 복사를 펼쳐 주세요.':'자동 복사가 허용되지 않았어요. 요청 문구 직접 복사를 펼쳐 주세요.';
-  });
-  $('#import-letter-result').addEventListener('click',()=>{
-    const value=$('#ai-letter-result').value.trim();
-    if(!value){$('#ai-letter-status').textContent='ChatGPT 결과를 먼저 붙여 넣어 주세요.';return}
-    $('#result').textContent=value;$('#result').classList.remove('empty');$('#copy-button').disabled=false;$('#copy-button').textContent='복사하기';
-    $('#ai-letter-status').textContent='안내문을 가져왔어요. 보내기 전에 내용을 확인해 주세요.';
-  });
   $('#copy-button').addEventListener('click',async()=>{
     const value=$('#result').textContent;
-    await copyText(value);
-    $('#copy-button').textContent='복사했어요 ✓';setTimeout(()=>$('#copy-button').textContent='복사하기',2200);
+    const copied=await copyText(value);
+    $('#copy-button').textContent=copied?'복사했어요 ✓':'복사할 수 없어요';setTimeout(()=>$('#copy-button').textContent='복사하기',2200);
   });
 })();
