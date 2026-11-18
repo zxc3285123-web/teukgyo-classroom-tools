@@ -2,7 +2,7 @@
 (() => {
   const pick = items => items[Math.floor(Math.random() * items.length)];
   const number = (low, high) => low + Math.floor(Math.random() * (high - low + 1));
-  const symbols = (items, label) => `<div class="picture-row" role="img" aria-label="${label}">${items.map(item => item === '□' ? '<span class="draw-cell"></span>' : `<span>${item}</span>`).join('')}</div>`;
+  const symbols = (items, label, start=-1) => `<div class="picture-row" role="img" aria-label="${label}">${items.map((item,i) => item === '□' ? '<span class="draw-cell"></span>' : `<span${i===start?' class="cue-start"':''}>${item}</span>`).join('')}</div>`;
   const make = (question, visual, answer, typeLabel = '그림 보고 쓰기') =>
     ({question, visual, answer: String(answer), typeLabel, responseInVisual: ['따라 그리기','모양 그리기','표 채우기','규칙 보고 그리기','빈칸 채우기','그림 보고 고르기'].includes(typeLabel)});
   const shape = (name, color = '') => `<i class="figure ${name} ${color}"></i>`;
@@ -21,7 +21,7 @@
       const limit = ['count5','split5','compareBasic'].includes(kind) ? 5 : 9;
       const a = number(1, kind === 'split5' ? 4 : kind === 'add9' ? 8 : limit);
       const b = number(1, kind === 'split5' ? 5-a : Math.max(1, limit-a));
-      const row = (n, label) => symbols(Array(n).fill(item), label + '에 ' + name + ' ' + n + '개');
+      const row = (n, label) => symbols(Array(n).fill(item), label + '에 ' + name + ' ' + n + '개',0);
       if (kind === 'split5' || kind === 'add9' || kind === 'add10') {
         const total = kind === 'add10' ? 10 : a+b;
         return make('그림을 보고 빈칸에 들어갈 수를 쓰세요.', row(a,'첫 묶음') + `<div class="picture-equation">${a} ＋ <span class="inline-blank"></span> ＝ ${total}</div>`, total-a, '빈칸 채우기');
@@ -39,10 +39,10 @@
       const row = Array.from({length:amount}, (_,i)=>objects[(start+i)%objects.length]);
       const position = number(2,amount);
       const reverse = Math.random()<.5;
-      return make(`화살표가 있는 쪽부터 세세요. ${position}번째 과일의 이름을 쓰세요.`,
-        symbols(reverse ? [...row.map(entry=>entry[0]),'←'] : ['→',...row.map(entry=>entry[0])],
-          (reverse?'오른쪽':'왼쪽')+'부터 세기. '+row.map(entry=>entry[1]).join(', ')),
-        row[reverse ? amount-position : position-1][1], '순서 세기');
+      return make(`${reverse?'오른쪽':'왼쪽'}에서 ${position}번째 과일은 무엇인가요?`,
+        symbols(row.map(entry=>entry[0]),
+          (reverse?'오른쪽':'왼쪽')+'부터 세기. '+row.map(entry=>entry[1]).join(', '),reverse?row.length-1:0),
+        row[reverse ? amount-position : position-1][1], '과일 이름 쓰기');
     }
     if (['positionBasic','direction','spaceRead','spaceUse'].includes(kind)) {
       const [position, answer] = pick([[1,'위'],[3,'왼쪽'],[5,'오른쪽'],[7,'아래']]);
@@ -62,16 +62,16 @@
       const a=number(1,7), b=number(1,7);
       const chart = `<table class="picture-table"><caption>좋아하는 과일 조사 (■ 한 칸 = 1명)</caption><tbody><tr><th scope="row">${item} ${name}</th><td>${'■ '.repeat(a)}</td></tr><tr><th scope="row">${other} ${otherName}</th><td>${'■ '.repeat(b)}</td></tr></tbody></table>`;
       if (kind==='makeTable') return make('그래프를 보고 표의 두 빈칸을 채우세요.', chart+`<table class="picture-table"><tr><th>${name}</th><th>${otherName}</th></tr><tr><td><span class="inline-blank"></span> 명</td><td><span class="inline-blank"></span> 명</td></tr></table>`, `${name} ${a}명, ${otherName} ${b}명`, '표 채우기');
-      return make(basic ? `‘${name}’에 표시한 사람은 몇 명인가요?` : '두 과일에 응답한 사람은 모두 몇 명인가요?', chart, (basic?a:a+b)+'명', '그래프 읽기');
+      return make(basic ? `‘${name}’에 표시한 사람은 몇 명인가요?` : '두 줄의 칸을 모두 세면 몇 명인가요?', chart, (basic?a:a+b)+'명', '그래프 읽기');
     }
     if (['form','lines','flatShape','objectShape','planeFigure','dailyGeometry','flatBuild','figureBuild','distinguish'].includes(kind)) {
       const forms = [['circle','동그라미'],['triangle','세모'],['square','네모']];
       const [form,label] = pick(forms);
       if (kind==='lines') {
         const line = pick(['─','│','╱','╲','⌒']);
-        return make('왼쪽 선을 보고 오른쪽 칸에 따라 그리세요.', symbols([line,'□'],'선 따라 그리기'), '왼쪽과 같은 모양의 선', '따라 그리기');
+        return make('왼쪽 선을 보고 오른쪽 칸에 따라 그리세요.', symbols([line,'□'],'선 따라 그리기',0), '왼쪽과 같은 모양의 선', '따라 그리기');
       }
-      return make('첫 번째 모양과 같은 모양을 빈칸에 그리세요.', symbols([shape(form), '→','□'],label+' 다음에 빈칸'), label, '모양 그리기');
+      return make('첫 번째 모양과 같은 모양을 빈칸에 그리세요.', symbols([shape(form), '→','□'],label+' 다음에 빈칸',0), label, '모양 그리기');
     }
     if (['signs','symbols','symbolMeaning','mediaRead','notices','readingPurpose'].includes(kind)) {
       const [icon,title,meaning] = pick(signs);
@@ -90,11 +90,16 @@
     }
     if (['actionWords','familiarwords','wordsSentences','reading','sentenceBuild','wordWriting','paragraph','infoSpeech'].includes(kind)) {
       const [icon,action] = pick(scenes);
+      if(basic || Math.random()<.5){
+        const other=pick(scenes.filter(row=>row[1]!==action));
+        return {question:'그림과 맞는 행동을 찾으세요.',type:'choice',typeLabel:'가리키거나 ○ 하세요',
+          stimulus:symbols([icon],'행동 그림'),choices:Math.random()<.5?[action,other[1]]:[other[1],action],answer:action};
+      }
       return make('그림 속 사람이 무엇을 하는지 한 문장으로 써 보세요.', symbols([icon], '행동 그림'), '예: '+action, '그림 보고 문장 쓰기');
     }
     if (['expression','nonverbal','feelingWords','intent'].includes(kind)) {
       const [face, answer] = pick([['😃','기뻐요'],['😢','슬퍼요'],['😠','화가 나요'],['😲','놀랐어요'],['😨','무서워요'],['😴','졸려요']]);
-      return make('표정을 보고 어떤 기분인지 말하거나 써 보세요.', symbols([face],'얼굴 표정'), '예: '+answer, '표정 보고 표현하기');
+      return make('표정을 보고 어떤 기분인지 말하거나 써 보세요.', symbols([face],'얼굴 표정',0), '예: '+answer, '표정 보고 표현하기');
     }
     if (['dailyTime','daynight','schedule'].includes(kind)) {
       const series = pick([[['🛏','일어나기'],['🥣','아침 먹기'],['🎒','학교 가기']],[['🧼','손 씻기'],['🍽','밥 먹기'],['🪥','이 닦기']],[['☀','해 뜨기'],['🌇','해 지기'],['🌙','밤 되기']]]);
