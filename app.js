@@ -45,7 +45,7 @@
       response = '<div class="answer-line ox-answer"><span><b class="mark-symbol">○</b> 맞아요</span><span><b class="mark-symbol">×</b> 틀려요</span></div>';
     }
     if (problem.type === 'match' || problem.responseInVisual) response = '';
-    if (answerSheet) response = `<div class="answer-value">정답: ${escapeHTML(problem.answer)}</div>`;
+    if (answerSheet) response = `<div class="answer-value">${problem.exampleAnswer ? '예시 답' : '정답'}: ${escapeHTML(problem.answer)}</div>`;
     const choices = problem.choices || (problem.type === 'choice' ? readChoices(problem) : []);
     const content = choices.length ? `<ol class="worksheet-options">${choices.map((choice,i)=>`<li><span class="option-number">${i+1}</span><span>${escapeHTML(choice)}</span></li>`).join('')}</ol>` : problem.visual;
     if (!answerSheet && choices.length) response = '';
@@ -102,38 +102,12 @@
     const match = problem.visual?.match(/^<div class="word-choices">보기:\s*([^<]+)<\/div>$/);
     return match ? match[1].split(/　·　/).map(option=>option.trim()).filter(Boolean) : [];
   }
-  function varyProblem(problem,index,used){
-    const p={...problem};
-    const choices=readChoices(p);
-    if(!choices.length){p.type='write';p.typeLabel='직접 쓰기';return p}
-    const mode=index%4;
-    if(mode===0){p.type='choice';p.typeLabel='알맞은 답에 ○ 하기';return p}
-    if(mode===1 && !/고르|보기|찾으세요/.test(p.question)){p.type='write';p.typeLabel='직접 쓰기';p.visual='';return p}
-    const wrong=choices.find(choice=>choice!==String(p.answer));
-    if(mode===2&&wrong&&!/고르|보기|찾으세요/.test(p.question)){
-      const candidate=Math.random()<.5?String(p.answer):wrong;
-      p.candidate=candidate;
-      p.answer=candidate===String(p.answer)?'○':'×';
-      p.visual='';p.type='ox';p.typeLabel='제시된 답이 맞으면 ○, 틀리면 ×';return p;
+  function presentProblem(problem) {
+    const choices = readChoices(problem);
+    if (choices.length) {
+      return {...problem, choices, type:'choice', typeLabel:'답 하나에 ○ 하세요'};
     }
-    if(mode===3&&wrong&&!/보기|그림|표를|고르/.test(p.question)){
-      const second=C.createProblems(current.topic,current.level,current.grade,5,[...used]).find(item=>!used.has(item.key)&&item.answer!==p.answer&&readChoices(item).length&&!/보기|그림|표를|고르/.test(item.question));
-      if(!second){p.type='choice';p.typeLabel='알맞은 답에 ○ 하기';return p}
-      used.add(second.key);
-      p.sourceKeys=[p.key,second.key];
-      p.type='match';p.typeLabel='선 잇기';
-      p.question='왼쪽 물음과 알맞은 답을 선으로 이으세요.';
-      const reverse=Math.random()<.5;
-      const first=reverse?second.answer:p.answer,other=reverse?p.answer:second.answer;
-      p.visual=`<div class="match-task">
-        <span>① ${escapeHTML(problem.question)}</span><span class="match-points" aria-hidden="true">●　　●</span><span>㉠ ${escapeHTML(first)}</span>
-        <span>② ${escapeHTML(second.question)}</span><span class="match-points" aria-hidden="true">●　　●</span><span>㉡ ${escapeHTML(other)}</span>
-      </div>`;
-      p.answer=reverse?'①–㉡, ②–㉠':'①–㉠, ②–㉡';
-      return p;
-    }
-    p.type='choice';p.typeLabel='알맞은 답에 ○ 하기';
-    return p;
+    return {...problem, type:problem.type || 'write', typeLabel:problem.typeLabel || '답을 쓰세요'};
   }
   const unitKinds = new Map(Object.values(window.expandBasicCurriculum)
     .flatMap(Object.values).flat().map(unit=>[unit.id,unit.kind]));
@@ -243,7 +217,7 @@
           return {...created,key};
         }
       }
-      return varyProblem(problem, (index + Math.floor(index / 4)) % 4, used);
+      return presentProblem(problem);
     });
     renderSheet();
     if(newSheet)rememberQuestions();
