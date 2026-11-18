@@ -24,6 +24,8 @@
   document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===button));
     $('#worksheet-panel').classList.toggle('hidden',button.dataset.tab!=='worksheet');
+    $('#foundation-panel').classList.toggle('hidden',button.dataset.tab!=='foundation');
+    document.body.classList.toggle('printing-foundation', button.dataset.tab==='foundation');
     $('#letter-panel').classList.toggle('hidden',button.dataset.tab!=='letter');
   }));
 
@@ -63,7 +65,7 @@
     if(problem.type==='choice') return ['▣ → ○','자료를 먼저 보고 보기 두 개를 비교해요.'];
     return ['보기 → 답','그림을 손으로 짚어 보며 답해요.'];
   }
-  function renderProblem(problem, number, answerSheet){
+  function renderProblem(problem, number, answerSheet, foundation=false){
     let response = '<div class="answer-line"><span>답</span><span class="answer-box"></span></div>';
     if (problem.type === 'ox') {
       response = '<div class="answer-line ox-answer"><span><b class="mark-symbol">○</b> 맞아요</span><span><b class="mark-symbol">×</b> 틀려요</span></div>';
@@ -71,21 +73,72 @@
     if (problem.type === 'match' || problem.responseInVisual) response = '';
     if (answerSheet) response = `<div class="answer-value">${problem.exampleAnswer ? '예시 답' : '정답'}: ${escapeHTML(problem.answer)}</div>`;
     const choices = problem.choices || (problem.type === 'choice' ? readChoices(problem) : []);
-    const content = (problem.stimulus || '') + (choices.length ? `<ol class="worksheet-options">${choices.map((choice,i)=>`<li><span class="option-number">${i+1}</span><span>${escapeHTML(choice)}</span></li>`).join('')}</ol>` : (problem.visual || ''));
-    if (!answerSheet && choices.length) response = '';
-    const visual = !answerSheet && content
-      ? `<div class="problem-visual">${content}</div>` : '';
-    const help=!answerSheet && current.level==='basic' ? $('#basic-help').value : 'off';
+    const material = (problem.stimulus || '') + (choices.length ? '' : (problem.visual || ''));
+    const visual = !answerSheet && material
+      ? `<div class="problem-visual">${choices.length ? '<strong class="zone-label">살펴봐요</strong>' : ''}${material}</div>` : '';
+    if (!answerSheet && choices.length) response = `<div class="response-zone"><strong class="zone-label">답 고르기</strong><ol class="worksheet-options">${choices.map(choice=>`<li>${escapeHTML(choice)}</li>`).join('')}</ol></div>`;
+    if (!answerSheet && problem.type === 'ox') response = '<div class="response-zone"><strong class="zone-label">답 고르기</strong>'+response+'</div>';
+    const help=!answerSheet && !foundation && current.level==='basic' ? $('#basic-help').value : 'off';
     const [symbol,tip]=help==='guided'?pictureHint(problem):['',''];
     const hint=tip?`<div class="picture-hint"><b aria-hidden="true">${symbol}</b><span>${tip}</span></div>`:'';
     return `<section class="problem" data-help="${help}">
       <div class="problem-top"><span class="problem-num">${number}</span>
-        ${!answerSheet?`<button type="button" class="sheet-edit-button" data-edit-problem="${number-1}" aria-label="${number}번 문항 수정">수정</button>`:''}
+        ${!answerSheet && !foundation?`<button type="button" class="sheet-edit-button" data-edit-problem="${number-1}" aria-label="${number}번 문항 수정">수정</button>`:''}
         <div><span class="problem-type">${escapeHTML(problem.typeLabel || '풀기')}</span>
         <div class="problem-question">${escapeHTML(problem.question)}${problem.candidate ? `<span class="problem-candidate">제시된 답: ${escapeHTML(problem.candidate)}</span>` : ''}</div></div>
       </div>${hint}${visual}${response}
     </section>`;
   }
+
+  const foundationSets = {
+    shape: ['●','▲','■','★','♥','◆'],
+    letter: ['가','나','다','라','마','바'],
+    digit: ['1','2','3','4','5','6'],
+    count: ['1','2','3'], more: ['1','2','3']
+  };
+  const foundationPrompt = {shape:'같은 모양을 찾으세요.',letter:'같은 글자를 찾으세요.',digit:'같은 숫자를 찾으세요.',count:'점이 몇 개인가요?',more:'점이 더 많은 쪽을 고르세요.'};
+  let foundationItems = [];
+  function shuffleFoundation(values) {
+    const items = [...values];
+    for(let i=items.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [items[i],items[j]]=[items[j],items[i]];
+    }
+    return items;
+  }
+  function generateFoundation(){
+    const kind=$('#foundation-task').value, pool=foundationSets[kind];
+    const count=Number($('#foundation-count').value);
+    foundationItems=[];
+    while(foundationItems.length<count){
+      for(const target of shuffleFoundation(pool)){
+        const other=pickItem(pool.filter(x=>x!==target));
+        const dots=n=>Array(Number(n)).fill('●').join(' ');
+        const more=kind==='more';
+        const choices=shuffleFoundation([target,other]).map(v=>more?dots(v):v);
+        foundationItems.push({question:foundationPrompt[kind],type:'choice',typeLabel:'가리키거나 ○ 하세요',
+          stimulus:more?'':'<span class="foundation-model">'+(kind==='count'?dots(target):target)+'</span>',
+          choices, answer:more?dots(Math.max(Number(target),Number(other))):target});
+        if(foundationItems.length===count) break;
+      }
+    }
+    renderFoundation();
+  }
+  function renderFoundation(){
+    const title=$('#foundation-task').selectedOptions[0].textContent;
+    const pages=[];
+    for(let i=0;i<foundationItems.length;i+=2){
+      pages.push(`<article class="foundation-page"><header><h2>${title}</h2><span>이름 ______________</span></header>${foundationItems.slice(i,i+2).map((p,j)=>renderProblem(p,i+j+1,false,true)).join('')}<footer>학생용 학습지 · ${pages.length+1} / ${Math.ceil(foundationItems.length/2)}</footer></article>`);
+    }
+    $('#foundation-preview').innerHTML=pages.join('');
+    const key=$('#foundation-key').checked ? `<article class="foundation-page"><header><h2>${title} · 교사용 정답지</h2></header><ol>${foundationItems.map(p=>`<li>${escapeHTML(p.answer)}</li>`).join('')}</ol></article>` : '';
+    $('#foundation-print-root').innerHTML=pages.join('')+key;
+  }
+  $('#foundation-form').addEventListener('submit',event=>{event.preventDefault();generateFoundation()});
+  $('#foundation-task').addEventListener('change',generateFoundation);
+  $('#foundation-count').addEventListener('change',generateFoundation);
+  $('#foundation-key').addEventListener('change',renderFoundation);
+  $('#foundation-print').addEventListener('click',()=>window.print());
 
   function renderSheet(){
     $('#basic-help-field').hidden=current.level!=='basic';
@@ -141,6 +194,8 @@
     .flatMap(Object.values).flat().map(unit=>[unit.id,unit.kind]));
   const pickItem = items=>items[Math.floor(Math.random()*items.length)];
   const integer = (min,max)=>min+Math.floor(Math.random()*(max-min+1));
+
+  generateFoundation();
 
   function generatedProblem(topic,level){
     const kind = unitKinds.get(topic);
