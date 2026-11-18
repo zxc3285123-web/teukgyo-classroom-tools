@@ -10,7 +10,7 @@
   const question=(q,a,b,c,level)=>({question:q,answer:String(a),visual:options(String(a),String(b),String(c),level)});
   const dots=n=>Array.from({length:n},()=>'<span class="count-dot"></span>').join('');
   const shapeNames=['동그라미','세모','네모'];
-  const objects=[['공','동그라미'],['피자 조각','세모'],['책','네모'],['시계','동그라미'],['교통 표지판','세모'],['창문','네모'],['바퀴','동그라미'],['삼각자','세모'],['액자','네모'],['접시','동그라미'],['달력','네모'],['삼각 깃발','세모'],['동전','동그라미'],['칠판','네모'],['도넛','동그라미']];
+  const objects=[['둥근 접시','동그라미'],['삼각 깃발','세모'],['책 표지','네모'],['둥근 시계판','동그라미'],['삼각 표지판','세모'],['직사각 창문','네모'],['바퀴','동그라미'],['삼각자','세모'],['액자','네모'],['둥근 쟁반','동그라미'],['직사각 달력','네모'],['삼각김밥의 앞면','세모'],['동전','동그라미'],['칠판','네모'],['도넛','동그라미']];
   const places=['교실','도서관','운동장','급식실','보건실','체육관'];
   function mathProblem(kind,level){
     if(['find','distinguish','objectShape','solidShape','flatShape','planeFigure','dailyGeometry'].includes(kind)){
@@ -91,7 +91,7 @@
       else {a=rand(11,18);b=rand(a-9,9);sign='−';answer=a-b}
       return {question:`${a} ${sign} ${b} = ?`,visual:level==='basic'?'<div class="word-choices">수를 차례대로 계산해 보세요.</div>':'',answer:String(answer)}
     }
-    if(kind==='lifeNumbers'){let n=rand(1000,9999),place=pick(['버스 번호','사물함 번호','물건 번호']);return question(`${place} ${n}에서 맨 앞 숫자는?`,String(n)[0],String(n)[1],String(n)[2],level)}
+    if(kind==='lifeNumbers'){let n=rand(1000,9999),place=pick(['버스 번호','사물함 번호','물건 번호']);const first=Number(String(n)[0]);return question(`${place} ${n}에서 맨 앞 숫자는?`,first,(first+1)%10,(first+2)%10,level)}
     return null;
   }
   window.fullUnitMathProblem=mathProblem;
