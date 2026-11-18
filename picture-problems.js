@@ -76,6 +76,13 @@
     if (['signs','symbols','symbolMeaning','mediaRead','notices','readingPurpose'].includes(kind)) {
       const [icon,title,meaning] = pick(signs);
       const wrong = pick(signs.filter(entry=>entry[1]!==title));
+      if (!basic && Math.random()<.5) {
+        const reverse=Math.random()<.5;
+        const meanings=reverse?[wrong[2],meaning]:[meaning,wrong[2]];
+        return {question:'각 표지와 그 뜻을 선으로 이으세요.', type:'match', typeLabel:'선 잇기',
+          visual:`<div class="match-task"><span>① ${icon} ${title}</span><span>●　●</span><span>㉠ ${meanings[0]}</span><span>② ${wrong[0]} ${wrong[1]}</span><span>●　●</span><span>㉡ ${meanings[1]}</span></div>`,
+          answer:reverse?'①–㉡, ②–㉠':'①–㉠, ②–㉡'};
+      }
       const options = Math.random()<.5?[meaning,wrong[2]]:[wrong[2],meaning];
       return basic
         ? make('표지의 뜻에 동그라미 하세요.', symbols([icon], '표지 그림') + `<div class="picture-options"><span>① ${options[0]}</span><span>② ${options[1]}</span></div>`, options.indexOf(meaning)+1, '그림 보고 고르기')
