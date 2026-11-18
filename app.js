@@ -29,12 +29,12 @@
 
   function sheetPage(items,page,total,layout,answer=false,start=0){
     const title=escapeHTML(current.title||`오늘의 ${C.topicInfo[current.topic][0]}`);
-    const subject=C.subjectNames[current.subject],topic=C.topicInfo[current.topic][0];
+    const subject=C.subjectNames[current.subject];
     return `<article class="worksheet-page${answer?' answer-page':''}" data-font="${layout.font}" data-size="${layout.size}" style="--worksheet-scale:${layout.scale}">
-      <div class="sheet-overline">2022 특수교육 기본 교육과정 · ${escapeHTML(C.bandName(current.grade))}</div>
-      <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2>${!answer?'<button type="button" class="sheet-edit-button" data-edit-title>제목 수정</button>':''}<span>${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}</span></div>
+      <div class="sheet-overline">${escapeHTML(C.gradeName(current.grade))} · ${escapeHTML(subject)}${current.title ? " · " + escapeHTML(C.topicInfo[current.topic][0]) : ""}</div>
+      <div class="sheet-title-row"><h2>${title}${answer?' · 정답':''}</h2>${!answer?'<button type="button" class="sheet-edit-button" data-edit-title>제목 수정</button>':''}</div>
       <div class="sheet-meta"><b>이름 <span></span></b><b>날짜 <span></span></b></div>
-      <div class="sheet-instruction"><strong>${escapeHTML(topic)} · </strong>${answer?'답을 확인하세요.':'그림과 문제를 살펴보고, 문항에 나온 방법대로 풀어 보세요.'}</div>
+
       <div class="problem-list">${items.map((problem,index)=>renderProblem(problem,start+index+1,answer)).join('')}</div>
       <div class="sheet-footer"><span>${answer?'교사용 정답지':'학생용 학습지'}</span><span>${page+1} / ${total}</span></div>
     </article>`;
