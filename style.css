@@ -264,3 +264,30 @@ html{font-synthesis:none}
 .problem:not([data-help="off"]) .cue-taken {color:#773e23;}
 .problem:not([data-help="off"]) :is(.activity-clue,.reading-passage,.picture-table caption) {border-inline-start:4px double #24627a;padding-inline-start:.5em;}
 .problem:not([data-help="off"]) :is(.inline-blank,.draw-cell,.pv-draw) {border:2px dashed #24627a;background:#f0f7fa;}
+
+.problem .zone-label {display:block;width:100%;font:700 .82em/1.35 var(--font-korean);color:#344c45}
+.problem .response-zone {margin:10px 0 0 var(--reading-indent,0px);padding:8px 12px;border-top:2px dashed #687a73;background:#f3f6f4}
+.response-zone .worksheet-options {display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 0}
+.problem .response-zone .worksheet-options li {display:block;min-width:3em;text-align:center;padding:4px 12px;background:white;border:1.5px solid #485c53;border-radius:7px}
+.problem .response-zone .ox-answer {margin-left:0}
+.picture-options {border-top:2px dashed #687a73;padding-top:6px}
+.picture-options::before {content:"답 고르기";display:block;width:100%;font-size:.82em}
+.foundation-page {background:white;color:#172f26;margin:0 auto 16px;padding:clamp(15px,4vw,38px);max-width:780px;font-size:22px}
+.foundation-page header {display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;border-bottom:2px solid;padding-bottom:12px;gap:10px}
+.foundation-page h2 {font-size:1.35em;margin:0}
+.foundation-page .problem {margin:20px 0;padding:14px 0}
+.foundation-page .problem-visual {margin-left:0}
+.foundation-model {font-size:1.8em;line-height:1.4}
+.foundation-page .response-zone li {font-size:1.25em}
+.foundation-page footer {background:white;color:#475c51;padding:12px 0;border-top:1px solid;text-align:right;font-size:15px}
+.foundation-page li {margin-block:4px}
+#foundation-print-root {display:none}
+@media(max-width:650px){.tool-nav{gap:5px;margin-inline:3%;justify-content:space-between}.tool-nav .tab{flex:1;padding-inline:3px}.tab span{display:block}}
+@media print {
+ body.printing-foundation #print-root {display:none!important}
+ body.printing-foundation #foundation-print-root {display:block}
+ .foundation-page {width:210mm;height:297mm;max-width:none;margin:0;padding:15mm;break-after:page;display:flex;flex-direction:column}
+ .foundation-page:last-child {break-after:auto}
+ .foundation-page .problem {margin:7mm 0;padding:4mm}
+ .foundation-page footer {margin-top:auto}
+}
