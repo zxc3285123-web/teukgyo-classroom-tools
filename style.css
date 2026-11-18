@@ -235,11 +235,32 @@ html{font-synthesis:none}
 .activity-clue,.counter-group,.value-set {border:1px solid #62766a;border-radius:5px;padding:.45em .65em;font-size:max(16px,calc(18px * var(--worksheet-scale)));line-height:1.5;overflow-wrap:anywhere;}
 .counter-group,.value-set {display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;}
 .value-set b {padding:2px 5px;border:1px solid currentColor;}
-.crossed {text-decoration:line-through;text-decoration-thickness:2px;}
-.crossed .value-set b {text-decoration:line-through;}
+ .subtract-model {width:100%; max-width:34em;}
+.sub-equation {font-size:1.15em;font-weight:600;margin-bottom:5px;}
+.sub-tokens {display:grid;grid-template-columns:repeat(5,minmax(0,2.1em));gap:2px 4px;}
+.sub-token {display:block;width:100%;height:auto;color:#16261d;}
+.subtract-model small {display:block;margin-top:5px;font-size:.88em;}
+.count-dot {border:1.5px solid currentColor;}
+
 .problem-visual:has(.pv-board,.activity-clue,.counter-group,.value-set) .worksheet-options {display:flex;flex-wrap:wrap;gap:8px;}
 .worksheet-page .problem-visual:has(.pv-board,.activity-clue,.counter-group,.value-set) .worksheet-options li {min-width:70px;border:1px solid #768b7c;border-radius:6px;padding:5px 9px;}
 
 .pv-draw {min-height:54px;margin:4px;border:1px dashed #66786b;}
 .pv-target {display:flex;align-items:center;gap:8px;}
 .pv-target b {border:1px solid currentColor;padding:3px 12px;font-size:1.35em;}
+
+/* Leave a clear pencil path between the two matching columns. */
+.match-task:has(.link-space) {grid-template-columns:minmax(0,1fr) minmax(38px,15%) minmax(0,1fr);row-gap:12px;}
+.match-task .link-space {display:flex;justify-content:space-between;align-items:center;font-size:0;}
+.link-space::before,.link-space::after {content:"";width:5px;height:5px;border:1.5px solid currentColor;border-radius:50%;}
+#basic-help-field {margin:0 0 1em;}
+#basic-help-field[hidden] {display:none;}
+.picture-hint {display:flex;align-items:center;gap:.6em;margin:5px 0 6px var(--reading-indent);font-size:max(14px,calc(15px * var(--worksheet-scale)));color:#254b60;}
+.picture-hint b {border:1px solid currentColor;border-radius:4px;padding:.1em .4em;white-space:nowrap;}
+.problem:not([data-help="off"]) :is(.cue-target,.cue-start) {outline:2px solid #24627a;outline-offset:-2px;background:#e9f4f7;}
+.problem:not([data-help="off"]) .cue-target>b:first-child::before,.problem:not([data-help="off"]) th.cue-target::before {content:"↓ ";color:#194e66;}
+.problem:not([data-help="off"]) .cue-start {border-bottom:3px double #194e66;}
+.problem:not([data-help="off"]) .cue-keep circle {fill:#d9edf5;stroke:#184f69;}
+.problem:not([data-help="off"]) .cue-taken {color:#773e23;}
+.problem:not([data-help="off"]) :is(.activity-clue,.reading-passage,.picture-table caption) {border-inline-start:4px double #24627a;padding-inline-start:.5em;}
+.problem:not([data-help="off"]) :is(.inline-blank,.draw-cell,.pv-draw) {border:2px dashed #24627a;background:#f0f7fa;}
