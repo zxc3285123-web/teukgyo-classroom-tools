@@ -221,3 +221,25 @@ html{font-synthesis:none}
 @media print {
   #print-root .problem-num { background: white; color: #182b21; border: 1.5px solid currentColor; }
 }
+
+.pv-board,.pv-digits {display:flex;align-items:stretch;width:100%;max-width:100%;border:1px solid #697a70;}
+.pv-column,.pv-digits>div {flex:1;min-width:0;text-align:center;}
+.pv-column+.pv-column,.pv-digits>div+div {border-left:1px solid #8b9890;}
+.pv-column>b,.pv-digits small {display:block;padding:3px;border-bottom:1px solid #a5afa8;font-size:max(13px,.85em);}
+.pv-blocks {min-height:50px;display:flex;align-items:flex-end;justify-content:center;flex-wrap:wrap;gap:3px;padding:5px;color:#1d352a;}
+.pv-blocks svg {max-width:100%;flex:none;}
+.pv-thousand {width:33px;height:36px;}
+.pv-digits {max-width:220px;margin-top:5px;}
+.pv-digits b {display:block;padding:4px;font-size:1.3em;}
+.pv-model-pair {display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:4px 8px;width:100%;}
+.activity-clue,.counter-group,.value-set {border:1px solid #62766a;border-radius:5px;padding:.45em .65em;font-size:max(16px,calc(18px * var(--worksheet-scale)));line-height:1.5;overflow-wrap:anywhere;}
+.counter-group,.value-set {display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px;}
+.value-set b {padding:2px 5px;border:1px solid currentColor;}
+.crossed {text-decoration:line-through;text-decoration-thickness:2px;}
+.crossed .value-set b {text-decoration:line-through;}
+.problem-visual:has(.pv-board,.activity-clue,.counter-group,.value-set) .worksheet-options {display:flex;flex-wrap:wrap;gap:8px;}
+.worksheet-page .problem-visual:has(.pv-board,.activity-clue,.counter-group,.value-set) .worksheet-options li {min-width:70px;border:1px solid #768b7c;border-radius:6px;padding:5px 9px;}
+
+.pv-draw {min-height:54px;margin:4px;border:1px dashed #66786b;}
+.pv-target {display:flex;align-items:center;gap:8px;}
+.pv-target b {border:1px solid currentColor;padding:3px 12px;font-size:1.35em;}
