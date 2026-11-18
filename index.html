@@ -8,7 +8,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8544439780701521" crossorigin="anonymous"></script>
   <title>다정한 교실 도구함</title>
   <link rel="preload" href="./PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="./style.css?v=cuelevel4">
+  <link rel="stylesheet" href="./style.css?v=foundation1">
 </head>
 <body>
   <div class="app-shell">
@@ -28,7 +28,7 @@
         <div class="hero-art" aria-hidden="true"><div class="paper paper-back"></div><div class="paper paper-front"><div class="paper-head"><span></span><span></span></div><b>오늘의 배움</b><div class="paper-line"></div><div class="paper-row"><i>1</i><span>● ● ●</span><strong>+ ● ●</strong></div><div class="paper-row"><i>2</i><span>◷</span><strong>몇 시일까요?</strong></div><div class="paper-bottom">차근차근, 나의 속도로 ♡</div></div><div class="star star-one">✳</div><div class="star star-two">✦</div></div>
       </section>
 
-      <nav class="tool-nav" aria-label="도구 선택"><button class="tab active" data-tab="worksheet" type="button"><span>01</span> 학습지 만들기</button><button class="tab" data-tab="letter" type="button"><span>02</span> 안내문 다듬기</button></nav>
+      <nav class="tool-nav" aria-label="도구 선택"><button class="tab active" data-tab="worksheet" type="button"><span>01</span> 학습지 만들기</button><button class="tab" data-tab="foundation" type="button"><span>02</span> 기초 학습 학습지</button><button class="tab" data-tab="letter" type="button"><span>03</span> 안내문 다듬기</button></nav>
 
       <section class="tool-section" id="worksheet-panel">
         <div class="section-intro"><div><span class="section-kicker">01 · 2022 BASIC CURRICULUM</span><h2>오늘 필요한 학습지, 바로 한 장</h2><p>2022 개정 특수교육 기본 교육과정에 맞춰 국어·수학·사회·진로와 직업 학습지를 만듭니다. 과목은 선택한 학년에 따라 표시됩니다.</p></div><span class="section-decoration" aria-hidden="true">✎</span></div>
@@ -61,8 +61,26 @@
         </div>
       </section>
 
+      <section class="tool-section hidden" id="foundation-panel">
+        <div class="section-intro"><div><h2>기초 학습 학습지</h2><p>한 번에 한 가지를 연습해요. 학생은 두 보기 중 하나를 가리키거나 동그라미로 표시할 수 있어요.</p></div></div>
+        <div class="workspace-grid">
+          <form class="control-card" id="foundation-form">
+            <div class="card-heading"><h3>기초 활동 선택</h3></div>
+            <div class="field"><label for="foundation-task">연습할 활동</label><select id="foundation-task">
+              <option value="shape">같은 모양 찾기</option><option value="letter">같은 글자 찾기</option>
+              <option value="digit">같은 숫자 찾기</option><option value="count">점 1~3개 세기</option>
+              <option value="more">더 많은 쪽 찾기</option>
+            </select></div>
+            <div class="field"><label for="foundation-count">문항 수</label><select id="foundation-count"><option>2</option><option selected>4</option><option>6</option></select></div>
+            <label class="checkline"><input type="checkbox" id="foundation-key">교사용 정답지 함께 인쇄하기</label>
+            <button class="primary-button" type="submit">새 기초 학습지 만들기</button>
+          </form>
+          <div class="preview-area"><div class="preview-heading"><h3>미리보기</h3><button type="button" class="outline-button" id="foundation-print">인쇄 / PDF 저장</button></div>
+            <div class="sheet-frame" id="foundation-preview"></div></div>
+        </div>
+      </section>
       <section class="tool-section hidden" id="letter-panel">
-        <div class="section-intro"><div><span class="section-kicker">02 · MESSAGE POLISHER</span><h2>전하고 싶은 말을, 더 정돈된 문장으로</h2><p>짧게 적은 내용을 학부모님께 보내기 좋은 안내문 형식으로 다듬습니다.</p></div><span class="section-decoration" aria-hidden="true">✉</span></div>
+        <div class="section-intro"><div><span class="section-kicker">03 · MESSAGE POLISHER</span><h2>전하고 싶은 말을, 더 정돈된 문장으로</h2><p>짧게 적은 내용을 학부모님께 보내기 좋은 안내문 형식으로 다듬습니다.</p></div><span class="section-decoration" aria-hidden="true">✉</span></div>
         <div class="letter-grid"><div class="control-card"><div class="card-heading"><span class="circle-number">1</span><h3>초안 입력</h3></div><label for="draft" class="input-label">전할 내용</label><textarea id="draft" rows="10" placeholder="예: 다음 주 학교 체육대회 예정&#10;복장 체육복&#10;장소 예술공원&#10;등교방법 자율 등교"></textarea><div class="privacy-note"><strong>🔒 개인정보를 줄여 주세요</strong><p>학생 실명, 진단명, 연락처, 주민등록번호 등은 입력하지 마세요. 필요하다면 ‘학생’, ‘보호자’처럼 바꿔 적어 주세요. 입력 내용은 서버로 전송하거나 저장하지 않습니다.</p></div><fieldset><legend>문장 분위기</legend><div class="segmented tone-select"><label><input type="radio" name="tone" value="formal" checked><span>정중하게</span></label><label><input type="radio" name="tone" value="warm"><span>따뜻하게</span></label><label><input type="radio" name="tone" value="brief"><span>간결하게</span></label></div></fieldset><fieldset class="notice-message-settings">
   <legend>학부모님께 전할 멘트</legend>
   <div class="field"><label for="notice-message-mode">마무리 방식</label>
@@ -92,6 +110,7 @@
       </div>
     </form>
   </dialog>
+  <div id="foundation-print-root"></div>
   <div id="print-root" aria-hidden="true"></div>
   <script src="./question-data.js?v=20261114c" defer></script>
   <script src="./question-data-more.js?v=20261114c" defer></script>
@@ -103,6 +122,6 @@
   <script src="./picture-problems.js?v=cuelevel4" defer></script>
   <script src="./social-career.js?v=cuelevel4" defer></script>
   <script src="./visual-activities.js?v=cuelevel4" defer></script>
-  <script src="./app.js?v=cuelevel4" defer></script>
+  <script src="./app.js?v=foundation1" defer></script>
 </body>
 </html>
