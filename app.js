@@ -90,56 +90,6 @@
     </section>`;
   }
 
-  const foundationSets = {
-    shape: ['●','▲','■','★','♥','◆'],
-    letter: ['가','나','다','라','마','바'],
-    digit: ['1','2','3','4','5','6'],
-    count: ['1','2','3'], more: ['1','2','3']
-  };
-  const foundationPrompt = {shape:'같은 모양을 찾으세요.',letter:'같은 글자를 찾으세요.',digit:'같은 숫자를 찾으세요.',count:'점이 몇 개인가요?',more:'점이 더 많은 쪽을 고르세요.'};
-  let foundationItems = [];
-  function shuffleFoundation(values) {
-    const items = [...values];
-    for(let i=items.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [items[i],items[j]]=[items[j],items[i]];
-    }
-    return items;
-  }
-  function generateFoundation(){
-    const kind=$('#foundation-task').value, pool=foundationSets[kind];
-    const count=Number($('#foundation-count').value);
-    foundationItems=[];
-    while(foundationItems.length<count){
-      for(const target of shuffleFoundation(pool)){
-        const other=pickItem(pool.filter(x=>x!==target));
-        const dots=n=>Array(Number(n)).fill('●').join(' ');
-        const more=kind==='more';
-        const choices=shuffleFoundation([target,other]).map(v=>more?dots(v):v);
-        foundationItems.push({question:foundationPrompt[kind],type:'choice',typeLabel:'가리키거나 ○ 하세요',
-          stimulus:more?'':'<span class="foundation-model">'+(kind==='count'?dots(target):target)+'</span>',
-          choices, answer:more?dots(Math.max(Number(target),Number(other))):target});
-        if(foundationItems.length===count) break;
-      }
-    }
-    renderFoundation();
-  }
-  function renderFoundation(){
-    const title=$('#foundation-task').selectedOptions[0].textContent;
-    const pages=[];
-    for(let i=0;i<foundationItems.length;i+=2){
-      pages.push(`<article class="foundation-page"><header><h2>${title}</h2><span>이름 ______________</span></header>${foundationItems.slice(i,i+2).map((p,j)=>renderProblem(p,i+j+1,false,true)).join('')}<footer>학생용 학습지 · ${pages.length+1} / ${Math.ceil(foundationItems.length/2)}</footer></article>`);
-    }
-    $('#foundation-preview').innerHTML=pages.join('');
-    const key=$('#foundation-key').checked ? `<article class="foundation-page"><header><h2>${title} · 교사용 정답지</h2></header><ol>${foundationItems.map(p=>`<li>${escapeHTML(p.answer)}</li>`).join('')}</ol></article>` : '';
-    $('#foundation-print-root').innerHTML=pages.join('')+key;
-  }
-  $('#foundation-form').addEventListener('submit',event=>{event.preventDefault();generateFoundation()});
-  $('#foundation-task').addEventListener('change',generateFoundation);
-  $('#foundation-count').addEventListener('change',generateFoundation);
-  $('#foundation-key').addEventListener('change',renderFoundation);
-  $('#foundation-print').addEventListener('click',()=>window.print());
-
   function renderSheet(){
     $('#basic-help-field').hidden=current.level!=='basic';
     const font = $('#worksheet-font').value;
@@ -195,7 +145,7 @@
   const pickItem = items=>items[Math.floor(Math.random()*items.length)];
   const integer = (min,max)=>min+Math.floor(Math.random()*(max-min+1));
 
-  generateFoundation();
+
 
   function generatedProblem(topic,level){
     const kind = unitKinds.get(topic);
