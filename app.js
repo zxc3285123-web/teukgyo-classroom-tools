@@ -39,6 +39,30 @@
       <div class="sheet-footer"><span>${answer?'교사용 정답지':'학생용 학습지'}</span><span>${page+1} / ${total}</span></div>
     </article>`;
   }
+  function pictureHint(problem) {
+    const material=problem.stimulus || problem.visual || '';
+    if(material.includes('subtract-model')) return material.includes('<circle')
+      ? ['예　○ ⊗ → 1개','×표는 건너뛰고 남은 동그라미만 세어요.']
+      : ['▭ → 합','×표가 없는 카드의 수만 더해요.'];
+    if(material.includes('pv-draw')) return ['● → □','수 카드의 맨 끝 숫자만큼 점을 그려요.'];
+    if(material.includes('pv-model-pair')) return ['㉠ ↕ ㉡','가장 왼쪽 자리부터 두 판을 비교해요.'];
+    if(material.includes('pv-board')) return ['↓','표시된 칸의 모형만 하나씩 짚어요.'];
+    if(material.includes('cue-target')) return ['→','표시된 시간에서 옆으로 따라가요.'];
+    if(material.includes('position-board')) return ['● → ★','가운데 동그라미부터 별 쪽으로 손을 움직여요.'];
+    if(material.includes('compare-rows')) return ['A ↕ B','위와 아래 그림을 하나씩 짝지어요.'];
+    if(problem.typeLabel==='규칙 보고 그리기') return ['↻ → □','되풀이되는 모양을 처음부터 짚어 봐요.'];
+    if(material.includes('draw-cell')) return ['보기 → □','왼쪽 모양을 살펴본 뒤 빈칸에 그려요.'];
+    if(material.includes('picture-equation')) return ['● → □','보이는 수에서 전체 수까지 하나씩 세어 보세요.'];
+    if(material.includes('counter-group')) return ['● ●','한 묶음씩 손으로 짚어 보세요.'];
+    if(material.includes('value-set')) return ['▭　▭','카드에 적힌 수부터 읽어요.'];
+    if(material.includes('picture-table')) return ['↓ →','표의 제목을 보고 필요한 줄을 찾아요.'];
+    if(material.includes('cue-start') && problem.typeLabel==='과일 이름 쓰기') return ['↓','표시된 과일부터 하나, 둘 세어요.'];
+    if(material.includes('얼굴 표정')) return ['눈 · 입','눈과 입의 모양을 살펴봐요.'];
+    if(material.includes('cue-start')) return ['↓','표시된 그림부터 하나씩 짚어요.'];
+    if(problem.type==='match') return ['● ─ ●','왼쪽 하나와 짝이 되는 것을 오른쪽에서 찾아요.'];
+    if(problem.type==='choice') return ['▣ → ○','자료를 먼저 보고 보기 두 개를 비교해요.'];
+    return ['보기 → 답','그림을 손으로 짚어 보며 답해요.'];
+  }
   function renderProblem(problem, number, answerSheet){
     let response = '<div class="answer-line"><span>답</span><span class="answer-box"></span></div>';
     if (problem.type === 'ox') {
@@ -51,16 +75,20 @@
     if (!answerSheet && choices.length) response = '';
     const visual = !answerSheet && content
       ? `<div class="problem-visual">${content}</div>` : '';
-    return `<section class="problem">
+    const help=!answerSheet && current.level==='basic' ? $('#basic-help').value : 'off';
+    const [symbol,tip]=help==='guided'?pictureHint(problem):['',''];
+    const hint=tip?`<div class="picture-hint"><b aria-hidden="true">${symbol}</b><span>${tip}</span></div>`:'';
+    return `<section class="problem" data-help="${help}">
       <div class="problem-top"><span class="problem-num">${number}</span>
         ${!answerSheet?`<button type="button" class="sheet-edit-button" data-edit-problem="${number-1}" aria-label="${number}번 문항 수정">수정</button>`:''}
         <div><span class="problem-type">${escapeHTML(problem.typeLabel || '풀기')}</span>
         <div class="problem-question">${escapeHTML(problem.question)}${problem.candidate ? `<span class="problem-candidate">제시된 답: ${escapeHTML(problem.candidate)}</span>` : ''}</div></div>
-      </div>${visual}${response}
+      </div>${hint}${visual}${response}
     </section>`;
   }
 
   function renderSheet(){
+    $('#basic-help-field').hidden=current.level!=='basic';
     const font = $('#worksheet-font').value;
     const pixels = Number($('#worksheet-size').value) || 19;
     const size = pixels <= 22 ? 'normal' : 'expanded';
@@ -157,7 +185,7 @@
       const won = amount=>amount.toLocaleString('ko-KR')+'원';
       const visual = card('가격표', [`${item}  ${won(price)}`]);
       if (kind === 'cardmoney') {
-        return problem(`카드로 ${item} 1개를 사면 얼마를 결제하나요?`,won(price),'가격표 읽기',visual);
+        return problem(`가격표에서 ${item} 한 개의 값을 찾으세요.`,won(price),'가격표 읽기',visual);
       }
       return problem(`${won(money)}을 내고 ${item} 1개를 사면 거스름돈은 얼마인가요?`,won(money-price),'거스름돈 계산',visual);
     }
@@ -195,27 +223,47 @@
     return null;
   }
 
+  function chooseSupported(topic,kind,level,index,recent,onSheet) {
+    const placeValue=['tens','hundreds','thousands'].includes(kind);
+    let best=null, bestScore=Infinity;
+    for(let attempt=0;attempt<36;attempt++){
+      const variant=placeValue?index:index+Math.floor(attempt/4);
+      const usePicture=!placeValue && (index+attempt)%4===2;
+      const activity=(usePicture && window.pictureProblem(topic,level))
+        || window.supportedActivity(topic,kind,level,variant)
+        || window.pictureProblem(topic,level);
+      if(!activity)continue;
+      const key=activity.activityId ? topic+'|model|'+activity.activityId
+        : JSON.stringify([topic,activity.question,activity.stimulus||activity.visual,activity.answer]);
+      // Exhaust the distinct tasks on this sheet before recycling a recent one.
+      const score=(onSheet.get(key)||0)*(recent.size+1)+(recent.get(key)||0);
+      if(score<bestScore){best={...activity,key};bestScore=score;}
+      if(score===0)break;
+    }
+    return best;
+  }
+
   function generate(newSheet=false){
     const topic=$('input[name="topic"]:checked');if(!topic)return;
     const previous=problems.flatMap(p=>p.sourceKeys||[p.key]).filter(Boolean);
     current={grade:$('#grade').value,subject:$('#subject').value,topic:topic.value,level:$('input[name="level"]:checked').value,count:Number($('#count').value),title:$('#paper-title').value.trim()};
     const avoided = [...previousKeys(current.grade,current.subject,current.topic), ...previous];
-    const used = new Set(avoided);
-    const base = C.createProblems(current.topic,current.level,current.grade,current.count,avoided);
+    const recent=new Map([...new Set(avoided)].map((key,i)=>[key,i+1]));
+    const used=new Set(avoided),onSheet=new Map();
+    const base=C.createProblems(current.topic,current.level,current.grade,current.count,avoided);
     base.forEach(problem=>used.add(problem.key));
-    problems = base.map((problem, index) => {
+    problems=base.map((problem,index)=>{
       const {topic,level,subject}=current;
       const kind=unitKinds.get(topic);
       const placeValue=['tens','hundreds','thousands'].includes(kind);
-      const useSupport=placeValue || (level==='basic' ? index%4!==3 : index%2===0);
+      // Lead with hands-on work. Reserve isolated slots for reading or writing.
+      const useSupport=placeValue || level==='basic' || index%3!==2;
       if(useSupport){
-        for(let attempt=0;attempt<24;attempt++){
-          const activity=window.supportedActivity(topic,kind,level,index) || window.pictureProblem(topic,level);
-          if(!activity) break;
-          const key=activity.activityId ? topic+'|model|'+activity.activityId : JSON.stringify([topic,activity.question,activity.stimulus||activity.visual,activity.answer]);
-          if(used.has(key) && !(placeValue && attempt===23)) continue;
-          used.add(key);
-          return {...activity,key};
+        const activity=chooseSupported(topic,kind,level,index,recent,onSheet);
+        if(activity){
+          onSheet.set(activity.key,(onSheet.get(activity.key)||0)+1);
+          used.add(activity.key);
+          return activity;
         }
       }
       if(subject==='social'||subject==='career')return problem;
@@ -326,6 +374,7 @@
       renderSheet();
     });
   }
+  $('#basic-help').addEventListener('change',renderSheet);
   $('#answer-key').addEventListener('change',renderSheet);
   $('#print-button').addEventListener('click',async ()=>{rememberQuestions();const page = $('#worksheet-preview .worksheet-page');
     if (page) {
@@ -347,11 +396,12 @@
   for (const radio of document.querySelectorAll('input[name="level"]')) {
     if (radio.value === savedSettings.level) radio.checked = true;
   }
+  if(['guided','mark','off'].includes(savedSettings.help)) $('#basic-help').value=savedSettings.help;
   $('#answer-key').checked = savedSettings.answerKey === true;
   updateSubjects(savedSettings);
   $('#worksheet-form').addEventListener('change', () => {
     const {grade, subject, topic, level} = current;
-    const settings = {grade, subject, topic, level, count: $('#count').value, answerKey: $('#answer-key').checked};
+    const settings = {grade, subject, topic, level, help:$('#basic-help').value, count: $('#count').value, answerKey: $('#answer-key').checked};
     try { localStorage.setItem(settingsKey, JSON.stringify(settings)); } catch {}
   });
   document.fonts.addEventListener('loadingdone',()=>{if(!editor.open)renderSheet()});
