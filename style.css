@@ -182,3 +182,42 @@ html{font-synthesis:none}
   #print-root .problem { break-inside: avoid-page; }
   #print-root .worksheet-page[data-size] .problem-question { overflow-wrap: anywhere; }
 }
+
+/* A shared reading column for the question, stimulus and response. */
+.worksheet-page {
+  --number-width: max(25px, calc(1.6em * var(--worksheet-scale)));
+  --question-gap: 10px;
+  --reading-indent: calc(var(--number-width) + var(--question-gap));
+}
+.worksheet-page .sheet-overline { font-size: max(12px, calc(13px * var(--worksheet-scale))); letter-spacing: 0; }
+.worksheet-page .sheet-title-row { align-items: center; padding: 4px 0 10px; }
+.worksheet-page .sheet-title-row h2 { line-height: 1.35; word-break: keep-all; overflow-wrap: anywhere; }
+.worksheet-page .sheet-meta { justify-content: flex-end; gap: 1.5em; margin-bottom: 12px; }
+.worksheet-page .sheet-meta span { min-width: 5em; }
+.worksheet-page .problem {
+  border: 0;
+  border-bottom: 1px solid #bdc7c1;
+  border-radius: 0;
+}
+.worksheet-page .problem-top { gap: var(--question-gap); }
+.worksheet-page .problem-num {
+  width: var(--number-width); height: var(--number-width);
+  border: 0; border-radius: 4px;
+  background: #264c3e; color: white;
+  font-size: max(14px, calc(16px * var(--worksheet-scale)));
+}
+.worksheet-page .problem-type {
+  font-size: max(13px, calc(14px * var(--worksheet-scale)));
+  line-height: 1.45; color: #40574a;
+}
+.worksheet-page .problem-question { font-weight: 600; line-height: 1.5; }
+.worksheet-page :is(.problem-visual,.answer-line,.answer-value) { margin-inline-start: var(--reading-indent); }
+.worksheet-page .worksheet-options li { border: 0; border-radius: 0; padding: 2px 0; }
+.worksheet-page[data-size] :is(.worksheet-options,.answer-line,.reading-passage,.word-choices) {
+  font-size: calc(17px * var(--worksheet-scale)); line-height: 1.55;
+}
+.worksheet-page .option-number { font-size: .9em; min-width: 1.6em; height: 1.6em; }
+.worksheet-page .answer-box { min-height: max(12mm, calc(2.25em * var(--worksheet-scale))); }
+@media print {
+  #print-root .problem-num { background: white; color: #182b21; border: 1.5px solid currentColor; }
+}
