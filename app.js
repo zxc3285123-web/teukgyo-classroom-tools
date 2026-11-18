@@ -47,7 +47,7 @@
     if (problem.type === 'match' || problem.responseInVisual) response = '';
     if (answerSheet) response = `<div class="answer-value">${problem.exampleAnswer ? '예시 답' : '정답'}: ${escapeHTML(problem.answer)}</div>`;
     const choices = problem.choices || (problem.type === 'choice' ? readChoices(problem) : []);
-    const content = choices.length ? `<ol class="worksheet-options">${choices.map((choice,i)=>`<li><span class="option-number">${i+1}</span><span>${escapeHTML(choice)}</span></li>`).join('')}</ol>` : problem.visual;
+    const content = (problem.stimulus || '') + (choices.length ? `<ol class="worksheet-options">${choices.map((choice,i)=>`<li><span class="option-number">${i+1}</span><span>${escapeHTML(choice)}</span></li>`).join('')}</ol>` : (problem.visual || ''));
     if (!answerSheet && choices.length) response = '';
     const visual = !answerSheet && content
       ? `<div class="problem-visual">${content}</div>` : '';
@@ -204,17 +204,29 @@
     const base = C.createProblems(current.topic,current.level,current.grade,current.count,avoided);
     base.forEach(problem=>used.add(problem.key));
     problems = base.map((problem, index) => {
-      if (current.subject === 'social' || current.subject === 'career') return problem;
-      const maker = index % 3 === 0 && generatedProblem(current.topic,current.level) ? generatedProblem
-        : index % 2 === 0 ? window.pictureProblem : null;
-      if (maker) {
-        for (let attempt = 0; attempt < 32; attempt++) {
-          const created = maker(current.topic,current.level);
-          if (!created) break;
-          const key = JSON.stringify([created.question,created.visual,created.answer]);
-          if (used.has(key)) continue;
+      const {topic,level,subject}=current;
+      const kind=unitKinds.get(topic);
+      const placeValue=['tens','hundreds','thousands'].includes(kind);
+      const useSupport=placeValue || (level==='basic' ? index%4!==3 : index%2===0);
+      if(useSupport){
+        for(let attempt=0;attempt<24;attempt++){
+          const activity=window.supportedActivity(topic,kind,level,index) || window.pictureProblem(topic,level);
+          if(!activity) break;
+          const key=activity.activityId ? topic+'|model|'+activity.activityId : JSON.stringify([topic,activity.question,activity.stimulus||activity.visual,activity.answer]);
+          if(used.has(key) && !(placeValue && attempt===23)) continue;
           used.add(key);
-          return {...created,key};
+          return {...activity,key};
+        }
+      }
+      if(subject==='social'||subject==='career')return problem;
+      if(!useSupport || index%3===0){
+        for(let attempt=0;attempt<12;attempt++){
+          const activity=generatedProblem(topic,level);
+          if(!activity)break;
+          const key=JSON.stringify([activity.question,activity.visual,activity.answer]);
+          if(used.has(key))continue;
+          used.add(key);
+          return {...activity,key};
         }
       }
       return presentProblem(problem);
