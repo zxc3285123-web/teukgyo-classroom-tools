@@ -230,12 +230,12 @@
     if(kind==='borrowSubtract'||kind==='carryAdd'){
       const left=rand(6,9),right=rand(10-left,8);
       if(kind==='borrowSubtract')return subtraction(left,right,1,level);
-      return choose('두 묶음의 모양은 모두 몇 개인가요?',dotGroup(left)+' ＋ '+dotGroup(right),left+right,left+right-1);
+      return choose('두 묶음의 모양은 모두 몇 개인가요?',window.pictureAddition(dotGroup(left),dotGroup(right)),left+right,left+right-1);
     }
     const a=rand(2,4),b=rand(1,3);
     const chips=n=>'<span class="value-set">'+('<b>'+unit+'</b>').repeat(n)+'</span>';
     if(index%4===2)return subtraction(a,b,unit,level);
-    return choose('수 카드를 모두 더하세요.',chips(a)+' ＋ '+chips(b),(a+b)*unit,(a+b-1)*unit);
+    return choose('수 카드를 모두 더하세요.',window.pictureAddition(chips(a),chips(b)),(a+b)*unit,(a+b-1)*unit);
   }
   // Only use reversible, one-to-one pairs in matching tasks.
   const pairSets={};
