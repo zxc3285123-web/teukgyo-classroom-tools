@@ -334,3 +334,14 @@ html{font-synthesis:none}
  .f-response strong {font-size:11pt}
  .f-write {height:22mm}
 }
+
+.picture-sum {display:inline-flex;align-items:center;gap:clamp(4px,.4em,10px);max-width:100%;min-width:0}
+.sum-side {display:flex;align-items:center;flex-wrap:wrap;gap:3px;min-width:0}
+.sum-side :is(.value-set,.counter-group) {max-width:100%;min-width:0}
+.sum-side .value-set b {overflow-wrap:normal}
+.sum-side .f-tile {white-space:normal}
+.sum-operator {display:inline-grid;place-items:center;flex:none;font-family:Arial,sans-serif;font-size:1.15em;line-height:1;font-weight:600}
+.sub-equation,.picture-equation {display:inline-flex;align-items:center;gap:.3em;max-width:100%;vertical-align:middle}
+.subtract-model>.sub-equation {display:flex}
+.sum-side:has(.value-set) {min-width:min-content}
+.sum-side .value-set {min-width:min-content}
