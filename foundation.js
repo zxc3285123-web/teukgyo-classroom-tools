@@ -71,7 +71,7 @@
   }
   add(math,'next','다음 수 쓰기',[1,2,3,4,5,6],n=>produce('다음 수를 쓰세요.',row([n,n+1])+blank,n+2));
   add(math,'middle','사이 수 찾기',[1,2,3,4,5,6],n=>choose('빈칸에 올 수를 고르세요.',frame(n)+blank+frame(n+2),n+1,n));
-  add(math,'add','두 묶음 합치기',[1,2,3],n=>{const m=pick([1,2]);return produce('점을 모두 세어 쓰세요.',frame(dots(n))+' ＋ '+frame(dots(m)),n+m);});
+  add(math,'add','두 묶음 합치기',[1,2,3],n=>{const m=pick([1,2]);return produce('점을 모두 세어 쓰세요.',window.pictureAddition(frame(dots(n)),frame(dots(m))),n+m);});
   add(math,'sub','남은 점 세기',[2,3,4,5],n=>choose('남은 점은 몇 개인가요?',frame(dots(n-1)+' <s class="f-cross">●</s>'),n-1,n));
   const paths={
     '곧은 선':['M12 35 H228','M12 55 L228 15','M12 18 L228 52'],
