@@ -22,7 +22,11 @@
   }
 
   document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===button));
+    document.querySelectorAll('.tab').forEach(tab=>{
+      const selected = tab===button;
+      tab.classList.toggle('active',selected);
+      tab.setAttribute('aria-pressed',String(selected));
+    });
     $('#worksheet-panel').classList.toggle('hidden',button.dataset.tab!=='worksheet');
     $('#foundation-panel').classList.toggle('hidden',button.dataset.tab!=='foundation');
     document.body.classList.toggle('printing-foundation', button.dataset.tab==='foundation');
@@ -291,6 +295,12 @@
     const grade=$('#grade').value,subject=$('#subject').value,topics=C.catalog[C.band(grade)][subject],old=preferredTopic ?? $('input[name="topic"]:checked')?.value;
     let lastArea='';
     $('#topic-options').innerHTML=topics.map((key,i)=>{const [name,icon,description]=C.topicInfo[key],area=C.unitArea?.(key)||'';let heading=area!==lastArea?`<div class="unit-group-title">${escapeHTML(area)}</div>`:'';lastArea=area;return `${heading}<label class="choice"><input type="radio" name="topic" value="${key}" ${old===key||(!topics.includes(old)&&i===0)?'checked':''}><span class="choice-icon">${icon}</span><strong>${escapeHTML(name)}</strong><small>${escapeHTML(description)}</small></label>`}).join('');
+    const topicList = $('#topic-options');
+    const selected = topicList.querySelector('input:checked')?.closest('label');
+    if (selected) {
+      const offset = selected.getBoundingClientRect().top - topicList.getBoundingClientRect().top;
+      topicList.scrollTop += Math.max(0, offset + selected.offsetHeight - topicList.clientHeight);
+    }
     generate();
   }
   function updateSubjects(preferences = {}){
