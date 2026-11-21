@@ -115,6 +115,7 @@
     find('foundation-preview').innerHTML=pages.join('');
     const key=find('foundation-key').checked?`<article class="foundation-page"><header><h2>${title} · 교사용 정답지</h2></header><ol>${problems.map(p=>'<li>'+p.answer+'</li>').join('')}</ol></article>`:'';
     find('foundation-print-root').innerHTML=pages.join('')+key;
+    find('foundation-preview-status').textContent=problems.length+'문항 · 학생용 '+pages.length+'쪽'+(key?' + 정답지 1쪽':'');
   }
   find('foundation-form').addEventListener('submit',e=>{e.preventDefault();generate()});
   select.addEventListener('change',generate);
