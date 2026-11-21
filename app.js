@@ -21,17 +21,44 @@
     try{localStorage.setItem(historyKey,JSON.stringify(questionHistory))}catch{}
   }
 
-  document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(tab=>{
-      const selected = tab===button;
-      tab.classList.toggle('active',selected);
-      tab.setAttribute('aria-pressed',String(selected));
+  const tools = [...document.querySelectorAll('.tool-nav [data-tab]')];
+  function showTool(){
+    const requested = new URLSearchParams(location.search).get('tool');
+    const active = tools.find(link=>link.dataset.tab===requested) || tools[0];
+    for(const link of tools){
+      const selected = link===active;
+      link.classList.toggle('active',selected);
+      if(selected) link.setAttribute('aria-current','page');
+      else link.removeAttribute('aria-current');
+      document.getElementById(link.getAttribute('aria-controls')).classList.toggle('hidden',!selected);
+    }
+    document.body.classList.toggle('printing-foundation',active.dataset.tab==='foundation');
+    document.title = active.textContent.trim()+' | 다정한 교실 도구함';
+  }
+  for(const link of tools){
+    link.addEventListener('click',event=>{
+      if(event.button!==0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      if(link.hasAttribute('aria-current')) return;
+      if(location.protocol==='file:'){
+        location.href=link.href;
+        return;
+      }
+      history.pushState(null,'',link.href);
+      showTool();
+      window.scrollTo({top:0,behavior:'instant'});
     });
-    $('#worksheet-panel').classList.toggle('hidden',button.dataset.tab!=='worksheet');
-    $('#foundation-panel').classList.toggle('hidden',button.dataset.tab!=='foundation');
-    document.body.classList.toggle('printing-foundation', button.dataset.tab==='foundation');
-    $('#letter-panel').classList.toggle('hidden',button.dataset.tab!=='letter');
-  }));
+  }
+  window.addEventListener('popstate',showTool);
+  showTool();
+
+  function offerMobilePreview(tool){
+    if(!matchMedia('(max-width: 860px)').matches) return;
+    const heading=document.getElementById(tool+'-preview-heading');
+    heading.focus({preventScroll:true});
+    heading.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  }
+  $('#foundation-form').addEventListener('submit',()=>offerMobilePreview('foundation'));
 
   function sheetPage(items,page,total,layout,answer=false,start=0){
     const title=escapeHTML(current.title||`오늘의 ${C.topicInfo[current.topic][0]}`);
@@ -315,7 +342,7 @@
   document.querySelectorAll('input[name="level"]').forEach(el=>el.addEventListener('change',()=>generate()));
   $('#count').addEventListener('change',()=>generate());
   $('#paper-title').addEventListener('input',()=>{if(current.topic){current.title=$('#paper-title').value.trim();renderSheet()}});
-  $('#worksheet-form').addEventListener('submit',e=>{e.preventDefault();generate(true)});
+  $('#worksheet-form').addEventListener('submit',e=>{e.preventDefault();generate(true);offerMobilePreview('worksheet')});
   const sizeControl = $('#worksheet-size');
   for (let size = minWorksheetSize; size <= maxWorksheetSize; size++) {
     sizeControl.add(new Option(size + ' px', size, size === 19, size === 19));
@@ -543,6 +570,7 @@
     $('#result').value=result;
     $('#result').readOnly=false;
     updateNoticeResult();
+    offerMobilePreview('letter');
   });
   function updateNoticeResult(){
     const warning = dateReview($('#result').value);
