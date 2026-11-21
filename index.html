@@ -9,10 +9,11 @@
   <title>다정한 교실 도구함</title>
   <link rel="preload" href="./PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="./style.css?v=mathalign1">
-  <link rel="stylesheet" href="./workspace.css?v=1">
+  <link rel="stylesheet" href="./workspace.css?v=2">
 </head>
 <body>
   <div class="app-shell">
+    <a class="skip-workspace" href="#top">본문 바로가기</a>
     <header class="workspace-header">
       <div class="workspace-header-inner">
         <a class="workspace-brand" href="./" aria-label="다정한 교실 도구함 홈">
@@ -20,19 +21,19 @@
           <span>다정한 교실 도구함</span>
         </a>
         <nav class="tool-nav" aria-label="도구 선택">
-          <button class="tab active" data-tab="worksheet" aria-controls="worksheet-panel" aria-pressed="true" type="button">학습지 만들기</button>
-          <button class="tab" data-tab="foundation" aria-controls="foundation-panel" aria-pressed="false" type="button">기초 학습 학습지</button>
-          <button class="tab" data-tab="letter" aria-controls="letter-panel" aria-pressed="false" type="button">안내문 다듬기</button>
+          <a class="tab active" data-tab="worksheet" aria-controls="worksheet-panel" href="?tool=worksheet" aria-current="page">학습지 만들기</a>
+          <a class="tab" data-tab="foundation" aria-controls="foundation-panel" href="?tool=foundation">기초 학습 학습지</a>
+          <a class="tab" data-tab="letter" aria-controls="letter-panel" href="?tool=letter">안내문 다듬기</a>
         </nav>
       </div>
     </header>
 
-    <main id="top">
+    <main id="top" tabindex="-1">
       <section class="tool-section" id="worksheet-panel">
         <div class="page-heading"><h1>학습지 만들기</h1><p>학년, 과목, 단원을 고르고 학생에게 맞는 학습지를 만드세요.</p></div>
         <div class="workspace-grid">
           <form class="control-card" id="worksheet-form">
-            <div class="card-heading"><h3>학습지 설정</h3></div>
+            <div class="card-heading"><h2>학습지 설정</h2></div>
             <div class="field-row grade-subject-row"><div class="field"><label for="grade">학년</label><select id="grade"><optgroup label="초등학교"><option value="e1">초등 1학년</option><option value="e2">초등 2학년</option><option value="e3">초등 3학년</option><option value="e4">초등 4학년</option><option value="e5">초등 5학년</option><option value="e6">초등 6학년</option></optgroup><optgroup label="중학교"><option value="m1">중학교 1학년</option><option value="m2">중학교 2학년</option><option value="m3">중학교 3학년</option></optgroup><optgroup label="고등학교"><option value="h1">고등학교 1학년</option><option value="h2">고등학교 2학년</option><option value="h3">고등학교 3학년</option></optgroup></select></div><div class="field"><label for="subject">과목</label><select id="subject"></select></div></div>
             <fieldset><legend>학습 단원 <span class="optional">학년군·과목에 맞게 표시됩니다</span></legend><div class="choice-grid topic-grid" id="topic-options"></div></fieldset>
             <fieldset><legend>이번 단원의 활동 수준</legend><div class="segmented"><label><input type="radio" name="level" value="challenge"><span>가 수준<small>스스로 적용하기</small></span></label><label><input type="radio" name="level" value="practice"><span>나 수준<small>단서로 해결하기</small></span></label><label><input type="radio" name="level" value="basic" checked><span>다 수준<small>보고 선택하기</small></span></label></div><p class="control-hint">학생이 이번 활동에서 필요한 도움에 맞춰 고르세요. 수준은 교사 설정에만 표시됩니다.</p></fieldset>
@@ -55,7 +56,7 @@
             <label class="checkline"><input id="answer-key" type="checkbox"><span>정답지 함께 인쇄하기</span></label>
             <button class="primary-button" type="submit">새 학습지 만들기 </button><p class="control-hint">다음 방문에도 이 브라우저에서 마지막 수업 설정으로 시작합니다. 사용한 문항을 우선 피해서 조합합니다. 문항과 정답을 학생의 개별화교육 목표에 맞게 확인해 주세요.</p>
           </form>
-          <div class="preview-area"><div class="preview-heading"><div><h3>미리보기</h3><span class="preview-status" id="preview-status" role="status"></span></div><button id="print-button" class="outline-button" type="button">인쇄 / PDF 저장</button></div><div class="sheet-frame" id="sheet-frame"><div id="worksheet-preview"></div></div><p class="preview-tip">인쇄할 때 <strong>A4 · 세로</strong>를 선택하세요. 대상 프린터를 <strong>PDF로 저장</strong>으로 선택하면 파일로 받을 수 있어요.</p><details class="curriculum-note"><summary>교육과정 및 단원 안내</summary><p>학습지 단원은 교육과정의 내용 요소를 바탕으로 구성했습니다. 중3·고3은 2027년부터 적용됩니다. <a href="https://www.nise.go.kr/onmam/openapi/fileDown.do?fileSn=oZXmqchDx6q4fe5TJYtELA" target="_blank" rel="noopener">2022 개정 특수교육 기본 교육과정 원문</a></p></details></div>
+          <div class="preview-area"><div class="preview-heading"><div><h2 id="worksheet-preview-heading" tabindex="-1">미리보기</h2><span class="preview-status" id="preview-status" role="status"></span></div><button id="print-button" class="outline-button" type="button">인쇄 / PDF 저장</button></div><div class="sheet-frame" id="sheet-frame" tabindex="0" role="region" aria-labelledby="worksheet-preview-heading"><div id="worksheet-preview"></div></div><p class="preview-tip">인쇄할 때 <strong>A4 · 세로</strong>를 선택하세요. 대상 프린터를 <strong>PDF로 저장</strong>으로 선택하면 파일로 받을 수 있어요.</p><details class="curriculum-note"><summary>교육과정 및 단원 안내</summary><p>학습지 단원은 교육과정의 내용 요소를 바탕으로 구성했습니다. 중3·고3은 2027년부터 적용됩니다. <a href="https://www.nise.go.kr/onmam/openapi/fileDown.do?fileSn=oZXmqchDx6q4fe5TJYtELA" target="_blank" rel="noopener">2022 개정 특수교육 기본 교육과정 원문</a></p></details></div>
         </div>
       </section>
 
@@ -63,20 +64,20 @@
         <div class="page-heading"><h1>기초 학습 학습지</h1><p>모양, 한글, 수, 선 긋기 중 연습할 활동을 고르세요.</p></div>
         <div class="workspace-grid">
           <form class="control-card" id="foundation-form">
-            <div class="card-heading"><h3>기초 활동 선택</h3></div>
+            <div class="card-heading"><h2>기초 활동 선택</h2></div>
             <div class="field"><label for="foundation-task">연습할 활동</label><select id="foundation-task">
               </select></div>
             <div class="field"><label for="foundation-count">문항 수</label><select id="foundation-count"><option>2</option><option selected>4</option><option>6</option></select></div>
             <label class="checkline"><input type="checkbox" id="foundation-key">교사용 정답지 함께 인쇄하기</label>
             <button class="primary-button" type="submit">새 기초 학습지 만들기</button>
           </form>
-          <div class="preview-area"><div class="preview-heading"><h3>미리보기</h3><button type="button" class="outline-button" id="foundation-print">인쇄 / PDF 저장</button></div>
-            <div class="sheet-frame" id="foundation-preview"></div></div>
+          <div class="preview-area"><div class="preview-heading"><div><h2 id="foundation-preview-heading" tabindex="-1">미리보기</h2><span class="preview-status" id="foundation-preview-status" role="status"></span></div><button type="button" class="outline-button" id="foundation-print">인쇄 / PDF 저장</button></div>
+            <div class="sheet-frame" id="foundation-preview" tabindex="0" role="region" aria-labelledby="foundation-preview-heading"></div></div>
         </div>
       </section>
       <section class="tool-section hidden" id="letter-panel">
         <div class="page-heading"><h1>안내문 다듬기</h1><p>전달할 내용을 적으면 학부모님께 보낼 문장으로 정리해 드려요.</p></div>
-        <div class="letter-grid"><div class="control-card"><div class="card-heading"><h3>초안 입력</h3></div><label for="draft" class="input-label">전할 내용</label><textarea id="draft" rows="10" placeholder="예: 다음 주 학교 체육대회 예정&#10;복장 체육복&#10;장소 예술공원&#10;등교방법 자율 등교"></textarea><div class="privacy-note"><strong>개인정보 입력 안내</strong><p>학생 실명, 진단명, 연락처, 주민등록번호 등은 입력하지 마세요. 필요하다면 ‘학생’, ‘보호자’처럼 바꿔 적어 주세요. 입력 내용은 서버로 전송하거나 저장하지 않습니다.</p></div><fieldset><legend>문장 분위기</legend><div class="segmented tone-select"><label><input type="radio" name="tone" value="formal" checked><span>정중하게</span></label><label><input type="radio" name="tone" value="warm"><span>따뜻하게</span></label><label><input type="radio" name="tone" value="brief"><span>간결하게</span></label></div></fieldset><fieldset class="notice-message-settings">
+        <div class="letter-grid"><div class="control-card"><div class="card-heading"><h2>초안 입력</h2></div><label for="draft" class="input-label">전할 내용</label><textarea id="draft" rows="10" placeholder="예: 다음 주 학교 체육대회 예정&#10;복장 체육복&#10;장소 예술공원&#10;등교방법 자율 등교"></textarea><div class="privacy-note"><strong>개인정보 입력 안내</strong><p>학생 실명, 진단명, 연락처, 주민등록번호 등은 입력하지 마세요. 필요하다면 ‘학생’, ‘보호자’처럼 바꿔 적어 주세요. 입력 내용은 서버로 전송하거나 저장하지 않습니다.</p></div><fieldset><legend>문장 분위기</legend><div class="segmented tone-select"><label><input type="radio" name="tone" value="formal" checked><span>정중하게</span></label><label><input type="radio" name="tone" value="warm"><span>따뜻하게</span></label><label><input type="radio" name="tone" value="brief"><span>간결하게</span></label></div></fieldset><fieldset class="notice-message-settings">
   <legend>학부모님께 전할 멘트</legend>
   <div class="field"><label for="notice-message-mode">마무리 방식</label>
     <select id="notice-message-mode">
@@ -89,7 +90,7 @@
     <label for="notice-message-text">추가할 문장</label>
     <textarea id="notice-message-text" rows="2" maxlength="300" placeholder="예: 자녀와 함께 준비물을 확인해 주시면 감사하겠습니다."></textarea>
   </div>
-</fieldset><button class="primary-button" id="polish-button" type="button">안내문 다듬기 </button></div><div class="result-card"><div class="preview-heading"><div><h3>다듬은 안내문</h3></div><button id="copy-button" class="outline-button" type="button" disabled>복사하기</button></div><label class="input-label" for="result">보낼 문구 · 직접 수정 가능</label><textarea id="result" rows="14" readonly placeholder="초안을 다듬으면 여기에 안내문이 나타납니다."></textarea><p id="notice-date-review" class="review-note" role="status" hidden></p><p class="review-note">보내기 전에 날짜·장소·준비물과 학생별 상황을 꼭 확인해 주세요. 이 도구는 입력한 사실만 사용해 문장을 정리합니다.</p></div></div>
+</fieldset><button class="primary-button" id="polish-button" type="button">안내문 다듬기 </button></div><div class="result-card"><div class="preview-heading"><div><h2 id="letter-preview-heading" tabindex="-1">다듬은 안내문</h2></div><button id="copy-button" class="outline-button" type="button" disabled>복사하기</button></div><label class="input-label" for="result">보낼 문구 · 직접 수정 가능</label><textarea id="result" rows="14" readonly placeholder="초안을 다듬으면 여기에 안내문이 나타납니다."></textarea><p id="notice-date-review" class="review-note" role="status" hidden></p><p class="review-note">보내기 전에 날짜·장소·준비물과 학생별 상황을 꼭 확인해 주세요. 이 도구는 입력한 사실만 사용해 문장을 정리합니다.</p></div></div>
       </section>
 
     </main>
@@ -121,7 +122,7 @@
   <script src="./picture-problems.js?v=cuelevel4" defer></script>
   <script src="./social-career.js?v=cuelevel4" defer></script>
   <script src="./visual-activities.js?v=mathalign1" defer></script>
-  <script defer src="./foundation.js?v=mathalign1"></script>
-  <script src="./app.js?v=workspace1" defer></script>
+  <script defer src="./foundation.js?v=workspace2"></script>
+  <script src="./app.js?v=workspace2" defer></script>
 </body>
 </html>
