@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f3f5f8">
+  <meta name="theme-color" content="#19372f">
   <meta name="description" content="특수교사를 위한 수준별 학습지와 학부모 안내문 작성 도구">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8544439780701521" crossorigin="anonymous"></script>
   <title>다정한 교실 도구함</title>
   <link rel="preload" href="./PretendardVariable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="./style.css?v=mathalign1">
-  <link rel="stylesheet" href="./workspace.css?v=2">
+  <link rel="stylesheet" href="./workspace.css?v=3">
 </head>
 <body>
   <div class="app-shell">
@@ -20,20 +20,21 @@
           <span class="workspace-emblem" aria-hidden="true"></span>
           <span>다정한 교실 도구함</span>
         </a>
-        <nav class="tool-nav" aria-label="도구 선택">
-          <a class="tab active" data-tab="worksheet" aria-controls="worksheet-panel" href="?tool=worksheet" aria-current="page">학습지 만들기</a>
-          <a class="tab" data-tab="foundation" aria-controls="foundation-panel" href="?tool=foundation">기초 학습 학습지</a>
-          <a class="tab" data-tab="letter" aria-controls="letter-panel" href="?tool=letter">안내문 다듬기</a>
-        </nav>
       </div>
     </header>
 
+    <div class="workspace-layout">
+      <nav class="tool-nav" aria-label="도구 선택">
+        <a class="tab active" data-tab="worksheet" aria-controls="worksheet-panel" href="?tool=worksheet" aria-current="page">학습지 만들기</a>
+        <a class="tab" data-tab="foundation" aria-controls="foundation-panel" href="?tool=foundation">기초 학습 학습지</a>
+        <a class="tab" data-tab="letter" aria-controls="letter-panel" href="?tool=letter">안내문 다듬기</a>
+      </nav>
     <main id="top" tabindex="-1">
       <section class="tool-section" id="worksheet-panel">
         <div class="page-heading"><h1>학습지 만들기</h1><p>학년, 과목, 단원을 고르고 학생에게 맞는 학습지를 만드세요.</p></div>
         <div class="workspace-grid">
           <form class="control-card" id="worksheet-form">
-            <div class="card-heading"><h2>학습지 설정</h2></div>
+            <div class="card-heading"><h2>학습지 설정</h2><button class="primary-button generate-button" type="submit">새로 만들기</button></div>
             <div class="field-row grade-subject-row"><div class="field"><label for="grade">학년</label><select id="grade"><optgroup label="초등학교"><option value="e1">초등 1학년</option><option value="e2">초등 2학년</option><option value="e3">초등 3학년</option><option value="e4">초등 4학년</option><option value="e5">초등 5학년</option><option value="e6">초등 6학년</option></optgroup><optgroup label="중학교"><option value="m1">중학교 1학년</option><option value="m2">중학교 2학년</option><option value="m3">중학교 3학년</option></optgroup><optgroup label="고등학교"><option value="h1">고등학교 1학년</option><option value="h2">고등학교 2학년</option><option value="h3">고등학교 3학년</option></optgroup></select></div><div class="field"><label for="subject">과목</label><select id="subject"></select></div></div>
             <fieldset><legend>학습 단원 <span class="optional">학년군·과목에 맞게 표시됩니다</span></legend><div class="choice-grid topic-grid" id="topic-options"></div></fieldset>
             <fieldset><legend>이번 단원의 활동 수준</legend><div class="segmented"><label><input type="radio" name="level" value="challenge"><span>가 수준<small>스스로 적용하기</small></span></label><label><input type="radio" name="level" value="practice"><span>나 수준<small>단서로 해결하기</small></span></label><label><input type="radio" name="level" value="basic" checked><span>다 수준<small>보고 선택하기</small></span></label></div><p class="control-hint">학생이 이번 활동에서 필요한 도움에 맞춰 고르세요. 수준은 교사 설정에만 표시됩니다.</p></fieldset>
@@ -54,9 +55,9 @@
               </div>
             </details>
             <label class="checkline"><input id="answer-key" type="checkbox"><span>정답지 함께 인쇄하기</span></label>
-            <button class="primary-button" type="submit">새 학습지 만들기 </button><p class="control-hint">다음 방문에도 이 브라우저에서 마지막 수업 설정으로 시작합니다. 사용한 문항을 우선 피해서 조합합니다. 문항과 정답을 학생의 개별화교육 목표에 맞게 확인해 주세요.</p>
+            <p class="control-hint">다음 방문에도 이 브라우저에서 마지막 수업 설정으로 시작합니다. 사용한 문항을 우선 피해서 조합합니다. 문항과 정답을 학생의 개별화교육 목표에 맞게 확인해 주세요.</p>
           </form>
-          <div class="preview-area"><div class="preview-heading"><div><h2 id="worksheet-preview-heading" tabindex="-1">미리보기</h2><span class="preview-status" id="preview-status" role="status"></span></div><button id="print-button" class="outline-button" type="button">인쇄 / PDF 저장</button></div><div class="sheet-frame" id="sheet-frame" tabindex="0" role="region" aria-labelledby="worksheet-preview-heading"><div id="worksheet-preview"></div></div><p class="preview-tip">인쇄할 때 <strong>A4 · 세로</strong>를 선택하세요. 대상 프린터를 <strong>PDF로 저장</strong>으로 선택하면 파일로 받을 수 있어요.</p><details class="curriculum-note"><summary>교육과정 및 단원 안내</summary><p>학습지 단원은 교육과정의 내용 요소를 바탕으로 구성했습니다. 중3·고3은 2027년부터 적용됩니다. <a href="https://www.nise.go.kr/onmam/openapi/fileDown.do?fileSn=oZXmqchDx6q4fe5TJYtELA" target="_blank" rel="noopener">2022 개정 특수교육 기본 교육과정 원문</a></p></details></div>
+          <div class="preview-area"><div class="preview-heading"><div><h2 id="worksheet-preview-heading" tabindex="-1">미리보기 <span class="paper-format">A4</span></h2><span class="preview-status" id="preview-status" role="status"></span></div><button id="print-button" class="outline-button" type="button">인쇄 / PDF 저장</button></div><div class="sheet-frame" id="sheet-frame" tabindex="0" role="region" aria-labelledby="worksheet-preview-heading"><div id="worksheet-preview"></div></div><p class="preview-tip">인쇄할 때 <strong>A4 · 세로</strong>를 선택하세요. 대상 프린터를 <strong>PDF로 저장</strong>으로 선택하면 파일로 받을 수 있어요.</p><details class="curriculum-note"><summary>교육과정 및 단원 안내</summary><p>학습지 단원은 교육과정의 내용 요소를 바탕으로 구성했습니다. 중3·고3은 2027년부터 적용됩니다. <a href="https://www.nise.go.kr/onmam/openapi/fileDown.do?fileSn=oZXmqchDx6q4fe5TJYtELA" target="_blank" rel="noopener">2022 개정 특수교육 기본 교육과정 원문</a></p></details></div>
         </div>
       </section>
 
@@ -64,14 +65,14 @@
         <div class="page-heading"><h1>기초 학습 학습지</h1><p>모양, 한글, 수, 선 긋기 중 연습할 활동을 고르세요.</p></div>
         <div class="workspace-grid">
           <form class="control-card" id="foundation-form">
-            <div class="card-heading"><h2>기초 활동 선택</h2></div>
+            <div class="card-heading"><h2>기초 활동 선택</h2><button class="primary-button generate-button" type="submit">새로 만들기</button></div>
             <div class="field"><label for="foundation-task">연습할 활동</label><select id="foundation-task">
               </select></div>
             <div class="field"><label for="foundation-count">문항 수</label><select id="foundation-count"><option>2</option><option selected>4</option><option>6</option></select></div>
             <label class="checkline"><input type="checkbox" id="foundation-key">교사용 정답지 함께 인쇄하기</label>
-            <button class="primary-button" type="submit">새 기초 학습지 만들기</button>
+
           </form>
-          <div class="preview-area"><div class="preview-heading"><div><h2 id="foundation-preview-heading" tabindex="-1">미리보기</h2><span class="preview-status" id="foundation-preview-status" role="status"></span></div><button type="button" class="outline-button" id="foundation-print">인쇄 / PDF 저장</button></div>
+          <div class="preview-area"><div class="preview-heading"><div><h2 id="foundation-preview-heading" tabindex="-1">미리보기 <span class="paper-format">A4</span></h2><span class="preview-status" id="foundation-preview-status" role="status"></span></div><button type="button" class="outline-button" id="foundation-print">인쇄 / PDF 저장</button></div>
             <div class="sheet-frame" id="foundation-preview" tabindex="0" role="region" aria-labelledby="foundation-preview-heading"></div></div>
         </div>
       </section>
@@ -94,6 +95,7 @@
       </section>
 
     </main>
+    </div>
     <footer class="workspace-footer">
       <span>다정한 교실 도구함</span>
       <a href="./privacy.html">개인정보·광고 안내</a>
