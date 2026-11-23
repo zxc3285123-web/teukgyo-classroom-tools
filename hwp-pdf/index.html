@@ -20,6 +20,9 @@
     h1 { font-size: clamp(2.2rem, 7vw, 4rem); letter-spacing: -.075em; margin: 16px 0 12px; line-height: 1.13; font-weight: 820; }
     h1 span { color: #2450ca; white-space: nowrap; }
     .intro { color: #485c7d; margin: 0 auto 35px; line-height: 1.65; }
+    .tools { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: -7px 0 26px; }
+    .tools a { padding: 9px 12px; border-radius: 8px; color: #254fcb; font-size: .9rem; text-decoration: none; font-weight: 700; }
+    .tools a:hover, .tools a[aria-current] { background: #e2ebff; }
     .art { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 auto 24px; height: 68px; }
     .page { display: grid; place-items: center; height: 58px; width: 48px; border: 1px solid #bfd1f6; border-radius: 9px; font: 750 .78rem system-ui; box-shadow: 0 5px 10px #254fcb18; background: white; color: #254fcb; transform: rotate(-8deg); }
     .page.pdf { transform: rotate(8deg); background: #2450ca; color: white; border-color: #2450ca; }
@@ -59,6 +62,11 @@
     <div class="art" aria-hidden="true"><span class="page">HWP</span><span class="dots"><i></i><i></i><i></i></span><span class="page pdf">PDF</span></div>
     <h1>한글 파일을 <span>바로 PDF로</span></h1>
     <p class="intro">한글 파일을 선택하면 변환 후 PDF가 자동으로 다운로드돼요.</p>
+    <nav class="tools" aria-label="파일 도구">
+      <a href="./" aria-current="page">한글 PDF 변환</a>
+      <a href="./compress.html">사진 용량 줄이기</a>
+      <a href="./compress.html?type=pdf">PDF 용량 줄이기</a>
+    </nav>
     <section class="work" aria-label="파일 변환">
       <div class="zone" id="zone">
         <h2>파일을 여기에 놓으세요</h2>
